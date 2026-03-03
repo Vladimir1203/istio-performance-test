@@ -1,0 +1,1 @@
+pod "fortio-sidecar-1k" deleted from istio-sidecar namespace

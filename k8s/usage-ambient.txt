@@ -1,0 +1,4 @@
+NAME                         CPU(cores)   MEMORY(bytes)   
+service-a-6f77f7fb96-lstwl   773m         91Mi            
+service-b-f69959879-jqvjw    977m         78Mi            
+service-c-79d8b7c44d-9nvbn   284m         55Mi            
