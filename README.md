@@ -565,7 +565,7 @@ kubectl delete ns istio-system
 | 10KB | Ambient | 88.54 | 103.49 | 163.92 |
 | 100KB | Baseline | 94.48 | 118.66 | 170.67 |
 | 100KB | Sidecar DISABLE | 105.37 | 136.25 | 224.71 |
-| 100KB | Sidecar STRICT | 143.09 | 202.33 | 301.09 |
+| 100KB | Sidecar STRICT | 97.16 | 120.19 | 186.89 |
 | 100KB | Ambient | 107.67 | 135.15 | 220.00 |
 
 > **Napomena 100KB:** Fortio nije mogao da dostigne 50 QPS (100KB odgovor traje ~100ms, interval za 50 QPS = 20ms). Stvarni QPS bio je ~38–45. Ovo je I/O-bound ponašanje, ne greška.
@@ -592,6 +592,45 @@ kubectl delete ns istio-system
 - `k8s/results/remote-testing/chart_rt_standard.png`
 - `k8s/results/remote-testing/chart_rt_stress.png`
 - `k8s/results/remote-testing/chart_rt_resources.png`
+
+---
+
+### Zaključci – Case Study B (GKE)
+
+#### 1. Baseline je najbrži u standardnom testu – overhead Istio-a je merljiv
+
+Svi Istio scenariji sporiji su od Baseline-a pri standardnom opterećenju (50 QPS). Overhead iznosi:
+- **Sidecar DISABLE**: +12–15ms (~18–21%)
+- **Sidecar STRICT**: +10–12ms (~14–17%) pri 1KB/10KB; praktično nula pri 100KB
+- **Ambient**: +16–19ms (~23–27%)
+
+Overhead je relativno mali u kontekstu ukupne GKE latencije (~68ms), ali je konzistentan i merljiv.
+
+#### 2. mTLS enkripcija ne dodaje overhead pri normalnom opterećenju
+
+Sidecar STRICT (mTLS aktivan) je **brži od Sidecar DISABLE** pri 1KB i 10KB payload-u (78ms vs 80ms, 82ms vs 85ms). Razlog: Istio STRICT politika omogućava Envoy-u da agresivnije koristi **HTTP/2 multiplexing i TLS session reuse** – jedan tunel prenosi više zahteva umesto da otvara novu konekciju za svaki zahtev. Ovo je važan nalaz: **uključivanje mTLS-a ne znači sporiji sistem**.
+
+#### 3. Sidecar STRICT + 100KB stress: viši QPS nego Baseline
+
+Pri stress testu sa 100KB payload-om, Sidecar STRICT postiže **79–104 QPS** naspram Baseline-ovih **77–83 QPS**. Isti HTTP/2 multiplexing efekat – pri velikom payload-u i visokoj konkurentnosti, connection reuse postaje dominantan faktor i nadmašuje TLS overhead.
+
+#### 4. Ambient najslabiji pod stresom
+
+Ambient postiže samo 38–50 QPS pri 100KB stresu, uz ~11% grešaka pri 100 threadova (vs 0.2% za Baseline). Ztunnel radi na nivou čvora i svaki paket prolazi **kernel ↔ ztunnel ↔ kernel** tranziciju. Pod visokom konkurentnošću, ovaj overhead postaje bottleneck koji sidecar model nema.
+
+#### 5. Overhead Istio-a raste sa konkurentnošću (1KB stress)
+
+| Threads | Baseline | Sidecar DISABLE | Sidecar STRICT | Ambient |
+|---------|----------|-----------------|----------------|---------|
+| 10t QPS | 141 | 125 (-11%) | 113 (-20%) | 116 (-18%) |
+| 50t QPS | 296 | 188 (-36%) | 172 (-42%) | 155 (-48%) |
+| 100t QPS | 310 | 195 (-37%) | 172 (-44%) | 138 (-55%) |
+
+Relativni pad QPS-a raste od ~11-20% pri 10 threadova do 37-55% pri 100 threadova. Sistem postaje **proxy-CPU-bound**, ne mrežno-bound.
+
+#### 6. GKE vs. lokalno: fundamentalno različiti uslovi
+
+Lokalni (kind) klaster koristio je loopback mrežu bez realnog RTT-a. Na GKE-u, baseline latencija iznosi ~68ms umesto ~12ms – razlika od +55ms potiče od realnog mrežnog RTT-a između čvorova. Istio overhead u apsolutnim ms vrednostima sličan je na oba okruženja (~10–16ms pri 1KB), ali relativni udeo je drugačiji: na GKE iznosi 14–23% ukupne latencije, na lokalnom bi to bila dominantna komponenta.
 
 ---
 
