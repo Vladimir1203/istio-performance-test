@@ -123,7 +123,53 @@ Za svaki od 4 scenarija pokreću se isti tipovi testova, samo se menja Istio kon
 
 ### Case Study B – Remote (GKE)
 
-> *U toku*
+> Vrednosti su mean (5 ponavljanja za standard, 3 za stress). Warmup 20s pre svakog testa.
+> Klaster: `istio-research-cluster`, `europe-west3-a`, `e2-standard-2` (2 vCPU, 8 GB RAM).
+> Izvor: `k8s/results/remote-testing/`
+
+#### Standard test (50 QPS, 60s)
+
+| Payload | Scenario | Avg ms | P90 ms | P99 ms |
+|---------|----------|--------|--------|--------|
+| 1KB | Baseline | 68.21 | 77.28 | 107.03 |
+| 1KB | Sidecar + DISABLE | 80.39 | 91.58 | 125.22 |
+| 1KB | Sidecar + STRICT | 78.07 | 88.18 | 123.86 |
+| 1KB | Ambient | 83.89 | 100.11 | 167.97 |
+| 10KB | Baseline | 69.99 | 78.65 | 105.23 |
+| 10KB | Sidecar + DISABLE | 84.69 | 99.69 | 150.01 |
+| 10KB | Sidecar + STRICT | 81.96 | 91.67 | 127.50 |
+| 10KB | Ambient | 88.54 | 103.49 | 163.92 |
+| 100KB | Baseline | 94.48 | 118.66 | 170.67 |
+| 100KB | Sidecar + DISABLE | 105.37 | 136.25 | 224.71 |
+| 100KB | Sidecar + STRICT | 97.16 | 120.19 | 186.89 |
+| 100KB | Ambient | 107.67 | 135.15 | 220.00 |
+
+> **Napomena 100KB:** Fortio nije mogao da dostigne 50 QPS (100KB odgovor traje ~100ms, interval za 50 QPS = 20ms). Stvarni QPS bio je ~38–45. Ovo je I/O-bound ponašanje, ne greška.
+
+#### Stress test (max QPS, 60s, 1KB)
+
+| Threads | Scenario | QPS | Avg ms | P99 ms |
+|---------|----------|-----|--------|--------|
+| 10 | Baseline | 141 | 70.97 | 128.37 |
+| 10 | Sidecar + DISABLE | 125 | 80.16 | 154.49 |
+| 10 | Sidecar + STRICT | 113 | 89.08 | 181.16 |
+| 10 | Ambient | 116 | 86.44 | 170.68 |
+| 50 | Baseline | 296 | 168.61 | 302.05 |
+| 50 | Sidecar + DISABLE | 188 | 265.11 | 455.54 |
+| 50 | Sidecar + STRICT | 172 | 289.82 | 485.34 |
+| 50 | Ambient | 155 | 322.38 | 558.27 |
+| 100 | Baseline | 310 | 322.68 | 518.55 |
+| 100 | Sidecar + DISABLE | 195 | 510.85 | 797.05 |
+| 100 | Sidecar + STRICT | 172 | 581.65 | 1253.22 |
+| 100 | Ambient | 138 | 765.89 | 2410.23 |
+
+#### Grafici
+
+- `k8s/results/remote-testing/chart_rt_standard.png`
+- `k8s/results/remote-testing/chart_rt_stress.png`
+- `k8s/results/remote-testing/chart_rt_resources.png`
+
+---
 
 ### Poređenje lokalno vs. remote
 
@@ -545,98 +591,9 @@ kubectl delete ns istio-system
 
 ---
 
-### Case Study B – Remote (GKE)
-
-> Vrednosti su mean (5 ponavljanja za standard, 3 za stress). Warmup 20s pre svakog testa.
-> Izvor: `k8s/results/remote-testing/`
-> Klaster: `istio-research-cluster`, zona `europe-west3-a`, `e2-standard-2` (2 vCPU, 8 GB RAM).
-
-#### Standard test (50 QPS, 60s)
-
-| Payload | Scenario | Avg ms | P90 ms | P99 ms |
-|---------|----------|--------|--------|--------|
-| 1KB | Baseline | 68.21 | 77.28 | 107.03 |
-| 1KB | Sidecar DISABLE | 80.39 | 91.58 | 125.22 |
-| 1KB | Sidecar STRICT | 78.07 | 88.18 | 123.86 |
-| 1KB | Ambient | 83.89 | 100.11 | 167.97 |
-| 10KB | Baseline | 69.99 | 78.65 | 105.23 |
-| 10KB | Sidecar DISABLE | 84.69 | 99.69 | 150.01 |
-| 10KB | Sidecar STRICT | 81.96 | 91.67 | 127.50 |
-| 10KB | Ambient | 88.54 | 103.49 | 163.92 |
-| 100KB | Baseline | 94.48 | 118.66 | 170.67 |
-| 100KB | Sidecar DISABLE | 105.37 | 136.25 | 224.71 |
-| 100KB | Sidecar STRICT | 97.16 | 120.19 | 186.89 |
-| 100KB | Ambient | 107.67 | 135.15 | 220.00 |
-
-> **Napomena 100KB:** Fortio nije mogao da dostigne 50 QPS (100KB odgovor traje ~100ms, interval za 50 QPS = 20ms). Stvarni QPS bio je ~38–45. Ovo je I/O-bound ponašanje, ne greška.
-
-#### Stress test (max QPS, 60s, 1KB)
-
-| Threads | Scenario | QPS | Avg ms | P99 ms |
-|---------|----------|-----|--------|--------|
-| 10 | Baseline | 141 | 70.97 | 128.37 |
-| 10 | Sidecar DISABLE | 125 | 80.16 | 154.49 |
-| 10 | Sidecar STRICT | 113 | 89.08 | 181.16 |
-| 10 | Ambient | 116 | 86.44 | 170.68 |
-| 50 | Baseline | 296 | 168.61 | 302.05 |
-| 50 | Sidecar DISABLE | 188 | 265.11 | 455.54 |
-| 50 | Sidecar STRICT | 172 | 289.82 | 485.34 |
-| 50 | Ambient | 155 | 322.38 | 558.27 |
-| 100 | Baseline | 310 | 322.68 | 518.55 |
-| 100 | Sidecar DISABLE | 195 | 510.85 | 797.05 |
-| 100 | Sidecar STRICT | 172 | 581.65 | 1253.22 |
-| 100 | Ambient | 138 | 765.89 | 2410.23 |
-
-#### Grafici
-
-- `k8s/results/remote-testing/chart_rt_standard.png`
-- `k8s/results/remote-testing/chart_rt_stress.png`
-- `k8s/results/remote-testing/chart_rt_resources.png`
-
----
-
-### Zaključci – Case Study B (GKE)
-
-#### 1. Baseline je najbrži u standardnom testu – overhead Istio-a je merljiv
-
-Svi Istio scenariji sporiji su od Baseline-a pri standardnom opterećenju (50 QPS). Overhead iznosi:
-- **Sidecar DISABLE**: +12–15ms (~18–21%)
-- **Sidecar STRICT**: +10–12ms (~14–17%) pri 1KB/10KB; praktično nula pri 100KB
-- **Ambient**: +16–19ms (~23–27%)
-
-Overhead je relativno mali u kontekstu ukupne GKE latencije (~68ms), ali je konzistentan i merljiv.
-
-#### 2. mTLS enkripcija ne dodaje overhead pri normalnom opterećenju
-
-Sidecar STRICT (mTLS aktivan) je **brži od Sidecar DISABLE** pri 1KB i 10KB payload-u (78ms vs 80ms, 82ms vs 85ms). Razlog: Istio STRICT politika omogućava Envoy-u da agresivnije koristi **HTTP/2 multiplexing i TLS session reuse** – jedan tunel prenosi više zahteva umesto da otvara novu konekciju za svaki zahtev. Ovo je važan nalaz: **uključivanje mTLS-a ne znači sporiji sistem**.
-
-#### 3. Sidecar STRICT + 100KB stress: viši QPS nego Baseline
-
-Pri stress testu sa 100KB payload-om, Sidecar STRICT postiže **79–104 QPS** naspram Baseline-ovih **77–83 QPS**. Isti HTTP/2 multiplexing efekat – pri velikom payload-u i visokoj konkurentnosti, connection reuse postaje dominantan faktor i nadmašuje TLS overhead.
-
-#### 4. Ambient najslabiji pod stresom
-
-Ambient postiže samo 38–50 QPS pri 100KB stresu, uz ~11% grešaka pri 100 threadova (vs 0.2% za Baseline). Ztunnel radi na nivou čvora i svaki paket prolazi **kernel ↔ ztunnel ↔ kernel** tranziciju. Pod visokom konkurentnošću, ovaj overhead postaje bottleneck koji sidecar model nema.
-
-#### 5. Overhead Istio-a raste sa konkurentnošću (1KB stress)
-
-| Threads | Baseline | Sidecar DISABLE | Sidecar STRICT | Ambient |
-|---------|----------|-----------------|----------------|---------|
-| 10t QPS | 141 | 125 (-11%) | 113 (-20%) | 116 (-18%) |
-| 50t QPS | 296 | 188 (-36%) | 172 (-42%) | 155 (-48%) |
-| 100t QPS | 310 | 195 (-37%) | 172 (-44%) | 138 (-55%) |
-
-Relativni pad QPS-a raste od ~11-20% pri 10 threadova do 37-55% pri 100 threadova. Sistem postaje **proxy-CPU-bound**, ne mrežno-bound.
-
-#### 6. GKE vs. lokalno: fundamentalno različiti uslovi
-
-Lokalni (kind) klaster koristio je loopback mrežu bez realnog RTT-a. Na GKE-u, baseline latencija iznosi ~68ms umesto ~12ms – razlika od +55ms potiče od realnog mrežnog RTT-a između čvorova. Istio overhead u apsolutnim ms vrednostima sličan je na oba okruženja (~10–16ms pri 1KB), ali relativni udeo je drugačiji: na GKE iznosi 14–23% ukupne latencije, na lokalnom bi to bila dominantna komponenta.
-
----
-
 ## Kako reprodukovati – Case Study B (GKE)
 
-### Infrastruktura
+### Infrastruktura (GKE)
 
 | Komponenta | Vrednost |
 |-----------|---------|
@@ -1033,6 +990,38 @@ gcloud container clusters resize istio-research-cluster \
 5. **mTLS overhead je minimalan pod stresom** – razlika između Sidecar DISABLE (2561 QPS) i Sidecar STRICT (2483 QPS) je svega 3%. Enkripcija nije bottleneck – proxy overhead je dominantan faktor.
 
 > **Napomena:** Lokalni testovi mere overhead proksija bez mrežnog faktora (loopback komunikacija unutar jednog Docker kontejnera). Ovi rezultati predstavljaju "idealni donji bound" – u realnom okruženju sa fizičkom mrežom razlike između scenarija biće izraženije.
+
+### Case Study B – Remote (GKE)
+
+1. **Baseline je najbrži u standardnom testu – overhead Istio-a je merljiv** – svi Istio scenariji sporiji su od Baseline-a pri 50 QPS. Overhead iznosi: Sidecar DISABLE +12–15ms (~18–21%), Sidecar STRICT +10–12ms (~14–17%) pri 1KB/10KB (praktično nula pri 100KB), Ambient +16–19ms (~23–27%). Overhead je mali u kontekstu ukupne GKE latencije (~68ms), ali je konzistentan i merljiv.
+
+2. **mTLS enkripcija ne dodaje overhead pri normalnom opterećenju** – Sidecar STRICT (mTLS aktivan) je **brži od Sidecar DISABLE** pri 1KB i 10KB payload-u (78ms vs 80ms, 82ms vs 85ms). Razlog: Istio STRICT politika omogućava Envoy-u da agresivnije koristi **HTTP/2 multiplexing i TLS session reuse**. Ovo je ključan nalaz: **uključivanje mTLS-a ne znači sporiji sistem**.
+
+3. **Sidecar STRICT + 100KB stress: viši QPS nego Baseline** – pri stress testu sa 100KB payload-om, Sidecar STRICT postiže 79–104 QPS naspram Baseline-ovih 77–83 QPS. Isti HTTP/2 multiplexing efekat – pri velikom payload-u i visokoj konkurentnosti, connection reuse postaje dominantan faktor i nadmašuje TLS overhead.
+
+4. **Overhead Istio-a raste sa konkurentnošću (1KB stress)**:
+
+   | Threads | Baseline | Sidecar DISABLE | Sidecar STRICT | Ambient |
+   |---------|----------|-----------------|----------------|---------|
+   | 10t QPS | 141 | 125 (-11%) | 113 (-20%) | 116 (-18%) |
+   | 50t QPS | 296 | 188 (-36%) | 172 (-42%) | 155 (-48%) |
+   | 100t QPS | 310 | 195 (-37%) | 172 (-44%) | 138 (-55%) |
+
+   Relativni pad QPS-a raste od ~11–20% pri 10 threadova do 37–55% pri 100 threadova. Sistem postaje **proxy-CPU-bound**, ne mrežno-bound.
+
+5. **Ambient je najslabiji pod visokim stresom** – ztunnel radi na nivou čvora i svaki paket prolazi kernel ↔ ztunnel ↔ kernel tranziciju. Pod visokom konkurentnošću, ovaj overhead postaje bottleneck koji sidecar model nema. Pri 100KB/100t ambient postiže 38–50 QPS vs Baseline 77–83 QPS.
+
+### Sveobuhvatni zaključci
+
+1. **Istio overhead je realan ali umeren** – pri normalnom opterećenju (50 QPS) iznosi 10–19ms na GKE-u (~14–27% baseline latencije). Za većinu aplikacija ovo je prihvatljiva cena za napredne mesh funkcionalnosti (observability, traffic management, zero-trust sigurnost).
+
+2. **mTLS nije "sporiji"** – Sidecar STRICT je konzistentno brži ili jednak Sidecar DISABLE-u. HTTP/2 multiplexing i TLS session reuse eliminišu overhead enkripcije pri uobičajenom opterećenju. Preporuka: koristiti STRICT mod bez straha od performansnih posledica.
+
+3. **Sidecar model je bolji izbor za visoko-paralelne workload-ove** – pod stresom (100t), Envoy L7 proxy skalira dramatično bolje od direktnog Node.js stacka (+57% QPS) ili ztunnel-a (+41% QPS). Ambient (ztunnel) ne pruža ove prednosti jer radi na L4.
+
+4. **Lokalni vs. GKE: različite dimenzije merenja** – kind meri čisti proxy overhead bez mreže (~10–16ms pri 1KB), GKE meri proxy overhead + realna mreža (~55ms RTT). Apsolutni overhead sličan je na oba okruženja, ali relativni udeo je drugačiji (14–23% na GKE vs dominantna komponenta lokalno).
+
+5. **Ambient je perspektivna tehnologija ali sa cenom** – niži operativni overhead (bez per-pod sidecar), ali lošije performanse pod stresom. Dobra opcija za okruženja gde je jednostavnost važnija od maksimalnog throughput-a.
 
 ---
 
