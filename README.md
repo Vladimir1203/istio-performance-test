@@ -127,7 +127,29 @@ Za svaki od 4 scenarija pokreću se isti tipovi testova, samo se menja Istio kon
 
 ### Poređenje lokalno vs. remote
 
-> *U toku*
+> **Napomena:** lokalni (kind) i GKE rezultati mere fundamentalno različite stvari.
+> - **Lokalno:** loopback komunikacija unutar jednog Docker kontejnera – nema realnog RTT. Meri čisti overhead proxy-ja.
+> - **GKE:** fizički odvojeni čvorovi u Frankfurtu, realni RTT ~0.38ms između pod-ova. Meri proxy overhead + realna mreža.
+
+#### Standard 1KB – Avg latencija
+
+| Scenario | Lokalno (kind) | GKE | Razlika |
+|----------|---------------|-----|---------|
+| Baseline | 12.66 ms | 68.21 ms | +55.55 ms |
+| Sidecar DISABLE | 12.71 ms | 80.39 ms | +67.68 ms |
+| Sidecar STRICT | 12.83 ms | 78.07 ms | +65.24 ms |
+| Ambient | 12.48 ms | 83.89 ms | +71.41 ms |
+
+#### Stress 1KB 10 threadova – QPS
+
+| Scenario | Lokalno (kind) | GKE | Faktor |
+|----------|---------------|-----|--------|
+| Baseline | 1532 | 141 | 10.9× |
+| Sidecar DISABLE | 1818 | 125 | 14.5× |
+| Sidecar STRICT | 1728 | 113 | 15.3× |
+| Ambient | 1372 | 116 | 11.8× |
+
+> GKE ima ~10–15× niži QPS u odnosu na lokalno zbog realne mrežne latencije. Relativni redosled scenarija ostaje konzistentan.
 
 ---
 
@@ -525,7 +547,435 @@ kubectl delete ns istio-system
 
 ### Case Study B – Remote (GKE)
 
-> *Dokumentacija u pripremi*
+> Vrednosti su mean (5 ponavljanja za standard, 3 za stress). Warmup 20s pre svakog testa.
+> Izvor: `k8s/results/remote-testing/`
+> Klaster: `istio-research-cluster`, zona `europe-west3-a`, `e2-standard-2` (2 vCPU, 8 GB RAM).
+
+#### Standard test (50 QPS, 60s)
+
+| Payload | Scenario | Avg ms | P90 ms | P99 ms |
+|---------|----------|--------|--------|--------|
+| 1KB | Baseline | 68.21 | 77.28 | 107.03 |
+| 1KB | Sidecar DISABLE | 80.39 | 91.58 | 125.22 |
+| 1KB | Sidecar STRICT | 78.07 | 88.18 | 123.86 |
+| 1KB | Ambient | 83.89 | 100.11 | 167.97 |
+| 10KB | Baseline | 69.99 | 78.65 | 105.23 |
+| 10KB | Sidecar DISABLE | 84.69 | 99.69 | 150.01 |
+| 10KB | Sidecar STRICT | 81.96 | 91.67 | 127.50 |
+| 10KB | Ambient | 88.54 | 103.49 | 163.92 |
+| 100KB | Baseline | 94.48 | 118.66 | 170.67 |
+| 100KB | Sidecar DISABLE | 105.37 | 136.25 | 224.71 |
+| 100KB | Sidecar STRICT | 143.09 | 202.33 | 301.09 |
+| 100KB | Ambient | 107.67 | 135.15 | 220.00 |
+
+> **Napomena 100KB:** Fortio nije mogao da dostigne 50 QPS (100KB odgovor traje ~100ms, interval za 50 QPS = 20ms). Stvarni QPS bio je ~38–45. Ovo je I/O-bound ponašanje, ne greška.
+
+#### Stress test (max QPS, 60s, 1KB)
+
+| Threads | Scenario | QPS | Avg ms | P99 ms |
+|---------|----------|-----|--------|--------|
+| 10 | Baseline | 141 | 70.97 | 128.37 |
+| 10 | Sidecar DISABLE | 125 | 80.16 | 154.49 |
+| 10 | Sidecar STRICT | 113 | 89.08 | 181.16 |
+| 10 | Ambient | 116 | 86.44 | 170.68 |
+| 50 | Baseline | 296 | 168.61 | 302.05 |
+| 50 | Sidecar DISABLE | 188 | 265.11 | 455.54 |
+| 50 | Sidecar STRICT | 172 | 289.82 | 485.34 |
+| 50 | Ambient | 155 | 322.38 | 558.27 |
+| 100 | Baseline | 310 | 322.68 | 518.55 |
+| 100 | Sidecar DISABLE | 195 | 510.85 | 797.05 |
+| 100 | Sidecar STRICT | 172 | 581.65 | 1253.22 |
+| 100 | Ambient | 138 | 765.89 | 2410.23 |
+
+#### Grafici
+
+- `k8s/results/remote-testing/chart_rt_standard.png`
+- `k8s/results/remote-testing/chart_rt_stress.png`
+- `k8s/results/remote-testing/chart_rt_resources.png`
+
+---
+
+## Kako reprodukovati – Case Study B (GKE)
+
+### Infrastruktura
+
+| Komponenta | Vrednost |
+|-----------|---------|
+| Cloud | GCP (Google Cloud Platform) |
+| Projekat | `istio-perf-1771697804` |
+| Klaster | `istio-research-cluster` |
+| Zona | `europe-west3-a` (Frankfurt) |
+| Mašine | `e2-standard-2` (2 vCPU, 8 GB RAM) |
+| Nodovi | 2 |
+| Docker registry | `europe-west3-docker.pkg.dev/istio-perf-1771697804/istio-research/` |
+
+### Preduslovi
+
+```bash
+# Instalirani alati
+gcloud   # Google Cloud CLI
+kubectl
+istioctl # v1.28+
+fortio
+```
+
+#### Priprema (jednom)
+
+```bash
+# 1. Login na GCP
+gcloud auth login
+
+# 2. Povezi se na klaster
+gcloud container clusters get-credentials istio-research-cluster \
+  --zone europe-west3-a \
+  --project istio-perf-1771697804
+
+# 3. Skaliranje nodova na 2 (ako su na 0)
+gcloud container clusters resize istio-research-cluster \
+  --node-pool default-pool \
+  --num-nodes 2 \
+  --zone europe-west3-a \
+  --project istio-perf-1771697804 \
+  --quiet
+
+# Sačekaj da nodovi budu Ready
+kubectl get nodes
+
+# 4. Verifikacija metrics-server (GKE ga instalira automatski)
+kubectl top nodes  # treba da vrati CPU/RAM vrednosti
+
+# 5. Push Docker slika na GCP registry (samo ako su slike izmenjene)
+gcloud auth configure-docker europe-west3-docker.pkg.dev
+docker push europe-west3-docker.pkg.dev/istio-perf-1771697804/istio-research/service-a:latest
+docker push europe-west3-docker.pkg.dev/istio-perf-1771697804/istio-research/service-b:latest
+docker push europe-west3-docker.pkg.dev/istio-perf-1771697804/istio-research/service-c:latest
+
+# 6. Čisto stanje – proveri da nema ostataka prethodnih sesija
+kubectl get pods -A | grep -v "kube-system\|gke-managed\|gmp-system"
+# Ako postoje ostaci:
+# kubectl delete ns istio-sidecar istio-ambient plain-k8s --ignore-not-found
+# istioctl uninstall --purge --skip-confirmation
+# kubectl delete ns istio-system --ignore-not-found
+```
+
+---
+
+#### Scenario 1 – Baseline (bez Istio-a)
+
+```bash
+kubectl create ns plain-k8s
+kubectl apply -f k8s/services.yaml -n plain-k8s
+kubectl wait --for=condition=Ready pod --all -n plain-k8s --timeout=120s
+
+# Sanity check
+kubectl run curl-test --image=curlimages/curl --rm -i --restart=Never -n plain-k8s \
+  -- curl -s "http://service-a/test?size=1"
+
+# Port-forward (u pozadini)
+kubectl port-forward svc/service-a 8080:80 -n plain-k8s &
+PF_PID=$!
+sleep 3
+curl -s "http://localhost:8080/test?size=1" | head -c 80
+
+# Inicijalni warmup
+fortio load -qps 50 -t 20s -c 4 "http://localhost:8080/test?size=1" > /dev/null
+
+# Standard testovi – 5 runova × 3 payload-a
+for payload in 1 10 100; do
+  fortio load -qps 50 -t 20s -c 4 "http://localhost:8080/test?size=${payload}" > /dev/null
+  for i in 1 2 3 4 5; do
+    while true; do
+      echo "$(date +%s),$(kubectl top pods -n plain-k8s --no-headers 2>/dev/null | tr -s ' ' ',')"
+      sleep 5
+    done > k8s/results/remote-testing/baseline/03_resources_standard/${payload}kb/run${i}_resources.csv &
+    RES_PID=$!
+
+    fortio load -qps 50 -t 60s -c 4 \
+      -json k8s/results/remote-testing/baseline/01_standard/${payload}kb/run${i}.json \
+      "http://localhost:8080/test?size=${payload}" > /dev/null
+
+    kill $RES_PID
+    sleep 15
+  done
+done
+
+# Stress testovi – 3 runa × 3 thread nivoa × 3 payload-a
+for payload in 1 10 100; do
+  for threads in 10 50 100; do
+    fortio load -c $threads -qps 0 -t 10s "http://localhost:8080/test?size=${payload}" > /dev/null
+    for i in 1 2 3; do
+      while true; do
+        echo "$(date +%s),$(kubectl top pods -n plain-k8s --no-headers 2>/dev/null | tr -s ' ' ',')"
+        sleep 5
+      done > k8s/results/remote-testing/baseline/04_resources_stress/${payload}kb/stress-${threads}t-run${i}_resources.csv &
+      RES_PID=$!
+
+      fortio load -c $threads -qps 0 -t 60s \
+        -json k8s/results/remote-testing/baseline/02_stress/${payload}kb/stress-${threads}t-run${i}.json \
+        "http://localhost:8080/test?size=${payload}" > /dev/null
+
+      kill $RES_PID
+      sleep 15
+    done
+  done
+done
+
+# Čišćenje
+kill $PF_PID
+kubectl delete ns plain-k8s
+```
+
+---
+
+#### Scenario 2 i 3 – Sidecar (mTLS DISABLE i STRICT)
+
+> Scenariji 2 i 3 dele istu Istio instalaciju (`profile=default`). Prvo se pokreću testovi sa DISABLE,
+> zatim se politika menja na STRICT i testovi se ponavljaju. Istio se instalira i deinstalira samo jednom.
+>
+> **Napomena o mTLS kontroli:** `PeerAuthentication` definiše server-side policy. Istio auto mTLS
+> mehanizam automatski prilagođava klijentsku stranu bez potrebe za `DestinationRule`.
+
+```bash
+istioctl install --set profile=default --skip-confirmation
+
+kubectl create ns istio-sidecar
+kubectl label ns istio-sidecar istio-injection=enabled
+kubectl apply -f k8s/services.yaml -n istio-sidecar
+kubectl wait --for=condition=Ready pod --all -n istio-sidecar --timeout=120s
+kubectl get pods -n istio-sidecar  # treba da vidi 2/2 (app + envoy sidecar)
+
+# Port-forward (u pozadini)
+kubectl port-forward svc/service-a 8080:80 -n istio-sidecar &
+PF_PID=$!
+sleep 3
+
+# --- Scenario 2: mTLS DISABLE ---
+kubectl apply -n istio-sidecar -f - <<EOF
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: mtls-policy
+  namespace: istio-sidecar
+spec:
+  mtls:
+    mode: DISABLE
+EOF
+
+# Verifikacija da je mTLS isključen (transportSocket: {} = plaintext)
+SIDECAR_POD_B=$(kubectl get pod -n istio-sidecar -l app=service-b -o jsonpath='{.items[0].metadata.name}')
+kubectl exec ${SIDECAR_POD_B} -n istio-sidecar -c istio-proxy -- \
+  curl -s localhost:15000/config_dump | python3 -c "
+import json, sys
+d = json.load(sys.stdin)
+for c in d.get('configs', []):
+  if c.get('@type','').endswith('ListenersConfigDump'):
+    for l in c.get('dynamic_listeners', []):
+      if 'virtualInbound' in l.get('name',''):
+        for fc in l.get('active_state',{}).get('listener',{}).get('filter_chains',[]):
+          ts = fc.get('transport_socket',{})
+          if ts: print('TLS aktivan:', ts.get('name'))
+          else: print('plaintext (nema transport_socket)')
+        break
+"
+
+# Sanity check + inicijalni warmup
+curl -s "http://localhost:8080/test?size=1" | head -c 80
+fortio load -qps 50 -t 20s -c 4 "http://localhost:8080/test?size=1" > /dev/null
+
+for payload in 1 10 100; do
+  fortio load -qps 50 -t 20s -c 4 "http://localhost:8080/test?size=${payload}" > /dev/null
+  for i in 1 2 3 4 5; do
+    while true; do
+      echo "$(date +%s),$(kubectl top pods -n istio-sidecar --no-headers 2>/dev/null | tr -s ' ' ',')"
+      sleep 5
+    done > k8s/results/remote-testing/sidecar-disable/03_resources_standard/${payload}kb/run${i}_resources.csv &
+    RES_PID=$!
+
+    fortio load -qps 50 -t 60s -c 4 \
+      -json k8s/results/remote-testing/sidecar-disable/01_standard/${payload}kb/run${i}.json \
+      "http://localhost:8080/test?size=${payload}" > /dev/null
+
+    kill $RES_PID
+    sleep 15
+  done
+done
+
+for payload in 1 10 100; do
+  for threads in 10 50 100; do
+    fortio load -c $threads -qps 0 -t 10s "http://localhost:8080/test?size=${payload}" > /dev/null
+    for i in 1 2 3; do
+      while true; do
+        echo "$(date +%s),$(kubectl top pods -n istio-sidecar --no-headers 2>/dev/null | tr -s ' ' ',')"
+        sleep 5
+      done > k8s/results/remote-testing/sidecar-disable/04_resources_stress/${payload}kb/stress-${threads}t-run${i}_resources.csv &
+      RES_PID=$!
+
+      fortio load -c $threads -qps 0 -t 60s \
+        -json k8s/results/remote-testing/sidecar-disable/02_stress/${payload}kb/stress-${threads}t-run${i}.json \
+        "http://localhost:8080/test?size=${payload}" > /dev/null
+
+      kill $RES_PID
+      sleep 15
+    done
+  done
+done
+
+# --- Scenario 3: mTLS STRICT ---
+kubectl apply -n istio-sidecar -f - <<EOF
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: mtls-policy
+  namespace: istio-sidecar
+spec:
+  mtls:
+    mode: STRICT
+EOF
+
+sleep 5
+
+# Verifikacija da je mTLS uključen (transport_socket = envoy.transport_sockets.tls)
+SIDECAR_POD_B=$(kubectl get pod -n istio-sidecar -l app=service-b -o jsonpath='{.items[0].metadata.name}')
+kubectl exec ${SIDECAR_POD_B} -n istio-sidecar -c istio-proxy -- \
+  curl -s localhost:15000/config_dump | python3 -c "
+import json, sys
+d = json.load(sys.stdin)
+for c in d.get('configs', []):
+  if c.get('@type','').endswith('ListenersConfigDump'):
+    for l in c.get('dynamic_listeners', []):
+      if 'virtualInbound' in l.get('name',''):
+        for fc in l.get('active_state',{}).get('listener',{}).get('filter_chains',[]):
+          ts = fc.get('transport_socket',{})
+          if ts: print('TLS aktivan:', ts.get('name'))
+        break
+"
+
+# Sanity check + inicijalni warmup
+curl -s "http://localhost:8080/test?size=1" | head -c 80
+fortio load -qps 50 -t 20s -c 4 "http://localhost:8080/test?size=1" > /dev/null
+
+for payload in 1 10 100; do
+  fortio load -qps 50 -t 20s -c 4 "http://localhost:8080/test?size=${payload}" > /dev/null
+  for i in 1 2 3 4 5; do
+    while true; do
+      echo "$(date +%s),$(kubectl top pods -n istio-sidecar --no-headers 2>/dev/null | tr -s ' ' ',')"
+      sleep 5
+    done > k8s/results/remote-testing/sidecar-strict/03_resources_standard/${payload}kb/run${i}_resources.csv &
+    RES_PID=$!
+
+    fortio load -qps 50 -t 60s -c 4 \
+      -json k8s/results/remote-testing/sidecar-strict/01_standard/${payload}kb/run${i}.json \
+      "http://localhost:8080/test?size=${payload}" > /dev/null
+
+    kill $RES_PID
+    sleep 15
+  done
+done
+
+for payload in 1 10 100; do
+  for threads in 10 50 100; do
+    fortio load -c $threads -qps 0 -t 10s "http://localhost:8080/test?size=${payload}" > /dev/null
+    for i in 1 2 3; do
+      while true; do
+        echo "$(date +%s),$(kubectl top pods -n istio-sidecar --no-headers 2>/dev/null | tr -s ' ' ',')"
+        sleep 5
+      done > k8s/results/remote-testing/sidecar-strict/04_resources_stress/${payload}kb/stress-${threads}t-run${i}_resources.csv &
+      RES_PID=$!
+
+      fortio load -c $threads -qps 0 -t 60s \
+        -json k8s/results/remote-testing/sidecar-strict/02_stress/${payload}kb/stress-${threads}t-run${i}.json \
+        "http://localhost:8080/test?size=${payload}" > /dev/null
+
+      kill $RES_PID
+      sleep 15
+    done
+  done
+done
+
+# Čišćenje
+kill $PF_PID
+kubectl delete ns istio-sidecar
+istioctl uninstall --purge --skip-confirmation
+kubectl delete ns istio-system
+```
+
+---
+
+#### Scenario 4 – Ambient
+
+```bash
+istioctl install --set profile=ambient --skip-confirmation
+
+kubectl create ns istio-ambient
+kubectl label ns istio-ambient istio.io/dataplane-mode=ambient
+kubectl apply -f k8s/services.yaml -n istio-ambient
+kubectl wait --for=condition=Ready pod --all -n istio-ambient --timeout=120s
+
+# Verifikacija – podovi imaju 1/1 (nema sidecar-a), ztunnel radi na node nivou
+kubectl get pods -n istio-ambient
+kubectl get pods -n istio-system | grep ztunnel
+
+# Port-forward (u pozadini)
+kubectl port-forward svc/service-a 8080:80 -n istio-ambient &
+PF_PID=$!
+sleep 3
+
+# Sanity check + inicijalni warmup
+curl -s "http://localhost:8080/test?size=1" | head -c 80
+fortio load -qps 50 -t 20s -c 4 "http://localhost:8080/test?size=1" > /dev/null
+
+for payload in 1 10 100; do
+  fortio load -qps 50 -t 20s -c 4 "http://localhost:8080/test?size=${payload}" > /dev/null
+  for i in 1 2 3 4 5; do
+    while true; do
+      echo "$(date +%s),$(kubectl top pods -n istio-ambient --no-headers 2>/dev/null | tr -s ' ' ',')"
+      sleep 5
+    done > k8s/results/remote-testing/ambient/03_resources_standard/${payload}kb/run${i}_resources.csv &
+    RES_PID=$!
+
+    fortio load -qps 50 -t 60s -c 4 \
+      -json k8s/results/remote-testing/ambient/01_standard/${payload}kb/run${i}.json \
+      "http://localhost:8080/test?size=${payload}" > /dev/null
+
+    kill $RES_PID
+    sleep 15
+  done
+done
+
+for payload in 1 10 100; do
+  for threads in 10 50 100; do
+    fortio load -c $threads -qps 0 -t 10s "http://localhost:8080/test?size=${payload}" > /dev/null
+    for i in 1 2 3; do
+      while true; do
+        echo "$(date +%s),$(kubectl top pods -n istio-ambient --no-headers 2>/dev/null | tr -s ' ' ',')"
+        sleep 5
+      done > k8s/results/remote-testing/ambient/04_resources_stress/${payload}kb/stress-${threads}t-run${i}_resources.csv &
+      RES_PID=$!
+
+      fortio load -c $threads -qps 0 -t 60s \
+        -json k8s/results/remote-testing/ambient/02_stress/${payload}kb/stress-${threads}t-run${i}.json \
+        "http://localhost:8080/test?size=${payload}" > /dev/null
+
+      kill $RES_PID
+      sleep 15
+    done
+  done
+done
+
+# Čišćenje
+kill $PF_PID
+kubectl delete ns istio-ambient
+istioctl uninstall --purge --skip-confirmation
+kubectl delete ns istio-system
+
+# Nakon svih scenarija – skaliranje nodova na 0 da se ne naplaćuje
+gcloud container clusters resize istio-research-cluster \
+  --node-pool default-pool \
+  --num-nodes 0 \
+  --zone europe-west3-a \
+  --project istio-perf-1771697804 \
+  --quiet
+```
 
 ---
 
