@@ -23,6 +23,10 @@ Tri Node.js/Express mikroservisa u lancu. Service-C generiše payload zadatog KB
 | 3 | Sidecar + mTLS STRICT | Envoy proxy + obavezni mTLS |
 | 4 | Ambient | Istio ztunnel (sidecarless), L4 mTLS |
 
+Napomena: Istio podržava tri mTLS moda unutar service mesh-a: DISABLE, PERMISSIVE i STRICT.
+U ovom istraživanju korišćeni su isključivo DISABLE i STRICT modovi kako bi se obezbedili deterministični i jasno uporedivi rezultati.
+PERMISSIVE mod, koji omogućava istovremeno plaintext i mTLS komunikaciju, izostavljen je jer uvodi nedeterminističko ponašanje i otežava precizno merenje performansi.
+
 ### Test matrica
 
 | Test | Payload | QPS | Trajanje | Threads | Ponavljanja |
@@ -995,9 +999,10 @@ gcloud container clusters resize istio-research-cluster \
 
 1. **Baseline je najbrži u standardnom testu – overhead Istio-a je merljiv** – svi Istio scenariji sporiji su od Baseline-a pri 50 QPS. Overhead iznosi: Sidecar DISABLE +12–15ms (~18–21%), Sidecar STRICT +10–12ms (~14–17%) pri 1KB/10KB (praktično nula pri 100KB), Ambient +16–19ms (~23–27%). Overhead je mali u kontekstu ukupne GKE latencije (~68ms), ali je konzistentan i merljiv.
 
-2. **mTLS enkripcija ne dodaje overhead pri normalnom opterećenju** – Sidecar STRICT (mTLS aktivan) je **brži od Sidecar DISABLE** pri 1KB i 10KB payload-u (78ms vs 80ms, 82ms vs 85ms). Razlog: Istio STRICT politika omogućava Envoy-u da agresivnije koristi **HTTP/2 multiplexing i TLS session reuse**. Ovo je ključan nalaz: **uključivanje mTLS-a ne znači sporiji sistem**.
+2. mTLS enkripcija ne dodaje značajan overhead pri normalnom opterećenju – Sidecar STRICT (mTLS aktivan) je blago brži 
+od Sidecar DISABLE pri 1KB i 10KB payload-u (78ms vs 80ms, 82ms vs 85ms). Razlog: ova razlika nije direktno vezana za mTLS mehanizam, već verovatno proizilazi iz ponašanja konekcija (connection reuse, pooling) i implementacionih detalja Envoy proxy-ja. HTTP protokol (HTTP/1.1 vs HTTP/2) nije direktno vezan za mTLS mod i konfiguriše se nezavisno. Ovo je ključan nalaz: uključivanje mTLS-a ne mora nužno dovesti do pogoršanja performansi.
 
-3. **Sidecar STRICT + 100KB stress: viši QPS nego Baseline** – pri stress testu sa 100KB payload-om, Sidecar STRICT postiže 79–104 QPS naspram Baseline-ovih 77–83 QPS. Isti HTTP/2 multiplexing efekat – pri velikom payload-u i visokoj konkurentnosti, connection reuse postaje dominantan faktor i nadmašuje TLS overhead.
+3. **Sidecar STRICT + 100KB stress: viši QPS nego Baseline** – pri stress testu sa 100KB payload-om, Sidecar STRICT postiže 79–104 QPS naspram Baseline-ovih 77–83 QPS. Ovaj efekat verovatno proizilazi iz efikasnijeg upravljanja konekcijama (connection reuse, pooling) i optimizacija unutar Envoy proxy-ja, koje pri većim payload-ovima i višoj konkurentnosti dolaze do izražaja.
 
 4. **Overhead Istio-a raste sa konkurentnošću (1KB stress)**:
 
@@ -1015,7 +1020,7 @@ gcloud container clusters resize istio-research-cluster \
 
 1. **Istio overhead je realan ali umeren** – pri normalnom opterećenju (50 QPS) iznosi 10–19ms na GKE-u (~14–27% baseline latencije). Za većinu aplikacija ovo je prihvatljiva cena za napredne mesh funkcionalnosti (observability, traffic management, zero-trust sigurnost).
 
-2. **mTLS nije "sporiji"** – Sidecar STRICT je konzistentno brži ili jednak Sidecar DISABLE-u. HTTP/2 multiplexing i TLS session reuse eliminišu overhead enkripcije pri uobičajenom opterećenju. Preporuka: koristiti STRICT mod bez straha od performansnih posledica.
+2. **mTLS nije "sporiji"** – Sidecar STRICT je konzistentno brži ili jednak Sidecar DISABLE-u. Mehanizmi poput connection reuse i optimizacija u radu Envoy proxy-ja mogu amortizovati overhead enkripcije pri uobičajenom opterećenju. Preporuka: koristiti STRICT mod bez značajnog rizika po performanse.
 
 3. **Sidecar model je bolji izbor za visoko-paralelne workload-ove** – pod stresom (100t), Envoy L7 proxy skalira dramatično bolje od direktnog Node.js stacka (+57% QPS) ili ztunnel-a (+41% QPS). Ambient (ztunnel) ne pruža ove prednosti jer radi na L4.
 

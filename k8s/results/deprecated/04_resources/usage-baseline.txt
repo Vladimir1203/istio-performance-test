@@ -1,4 +1,0 @@
-NAME                         CPU(cores)   MEMORY(bytes)   
-service-a-6f77f7fb96-5r6x6   1007m        74Mi            
-service-b-f69959879-l9zbv    926m         68Mi            
-service-c-79d8b7c44d-6hf46   304m         54Mi            
