@@ -1053,13 +1053,7 @@ istio-performance-test/
 │       │   ├── chart_lt_standard.png
 │       │   ├── chart_lt_stress.png
 │       │   └── chart_lt_resources.png
-│       ├── remote-testing/ # Case Study B – GKE (ista struktura kao local-testing)
-│       └── deprecated/     # Stari rezultati (single-run, bez CPU/RAM – nevalidni za poređenje)
-│           ├── local/          # Ranija lokalna sesija bez per-run CSV
-│           ├── 01_standard/    # Stari GKE single-run rezultati
-│           ├── 02_stress/
-│           ├── 03_extreme/
-│           └── 04_resources/
+│       └── remote-testing/ # Case Study B – GKE (ista struktura kao local-testing)
 ├── generate_charts.py      # Generiše PNG grafike iz JSON rezultata
 └── README.md
 ```
