@@ -46,7 +46,7 @@ Za svaki od 4 scenarija pokreću se isti tipovi testova, samo se menja Istio kon
 
 ### Tipovi testova
 
-**Standard test** – kontrolisano opterećenje od tačno 50 zahteva u sekundi. Cilj je merenje latencije u normalnim, predvidivim uslovima. Pokreće se za 3 veličine payload-a (1KB, 10KB, 100KB) da bi se videlo kako veličina odgovora utiče na overhead mesh-a.
+**Standard test** – kontrolisano opterećenje od tačno 50 zahteva u sekundi, trajanje 60s = 3000 zahteva po runu. Cilj je merenje latencije u normalnim, predvidivim uslovima. Pokreće se za 3 veličine payload-a (1KB, 10KB, 100KB) da bi se videlo kako veličina odgovora utiče na overhead mesh-a. Koriste se 4 paralelna threada (`-c 4`) da Fortio nikad ne postane bottleneck – pri P99 spike-ovima do ~25ms jedan thread ne bi mogao da održi 50 QPS, dok 4 threada obezbeđuju dovoljnu marginu (matematički minimum je 2, uzeto 4 radi sigurnosti).
 
 **Stress test** – bez ograničenja QPS-a, Fortio šalje zahteve što brže može. Cilj je nalaženje granice sistema – maksimalnog propusnog opsega i ponašanja latencije pod punim opterećenjem. Pokreće se sa 3 nivoa konkurentnosti (10, 50, 100 paralelnih konekcija) i 3 payload-a.
 
@@ -83,47 +83,47 @@ Za svaki od 4 scenarija pokreću se isti tipovi testova, samo se menja Istio kon
 
 **1 KB payload:**
 
-| Scenario | Avg ms | P90 ms | P99 ms |
-|----------|--------|--------|--------|
-| Baseline | 12.66 | 17.44 | 25.08 |
-| Sidecar + DISABLE | 12.71 | 16.94 | 21.11 |
-| Sidecar + STRICT | 12.83 | 16.93 | 19.59 |
-| Ambient | 12.48 | 16.48 | 19.34 |
+| Scenario | Avg ms | P90 ms | P99 ms | CPU (m) | RAM (Mi) |
+|----------|--------|--------|--------|---------|----------|
+| Baseline | 12.66 | 17.44 | 25.08 | 154 | 146 |
+| Sidecar + DISABLE | 12.71 | 16.94 | 21.11 | 205 | 271 |
+| Sidecar + STRICT | 12.83 | 16.93 | 19.59 | 195 | 328 |
+| Ambient | 12.48 | 16.48 | 19.34 | 153 | 141 |
 
 **10 KB payload:**
 
-| Scenario | Avg ms | P90 ms | P99 ms |
-|----------|--------|--------|--------|
-| Baseline | 13.05 | 17.67 | 25.01 |
-| Sidecar + DISABLE | 12.64 | 16.89 | 19.61 |
-| Sidecar + STRICT | 12.84 | 16.91 | 19.75 |
-| Ambient | 12.84 | 16.95 | 19.66 |
+| Scenario | Avg ms | P90 ms | P99 ms | CPU (m) | RAM (Mi) |
+|----------|--------|--------|--------|---------|----------|
+| Baseline | 13.05 | 17.67 | 25.01 | 155 | 145 |
+| Sidecar + DISABLE | 12.64 | 16.89 | 19.61 | 199 | 279 |
+| Sidecar + STRICT | 12.84 | 16.91 | 19.75 | 191 | 330 |
+| Ambient | 12.84 | 16.95 | 19.66 | 143 | 147 |
 
 **100 KB payload:**
 
-| Scenario | Avg ms | P90 ms | P99 ms |
-|----------|--------|--------|--------|
-| Baseline | 14.72 | 19.13 | 25.36 |
-| Sidecar + DISABLE | 13.61 | 16.95 | 20.71 |
-| Sidecar + STRICT | 14.13 | 17.66 | 23.20 |
-| Ambient | 14.28 | 17.63 | 22.62 |
+| Scenario | Avg ms | P90 ms | P99 ms | CPU (m) | RAM (Mi) |
+|----------|--------|--------|--------|---------|----------|
+| Baseline | 14.72 | 19.13 | 25.36 | 290 | 160 |
+| Sidecar + DISABLE | 13.61 | 16.95 | 20.71 | 304 | 287 |
+| Sidecar + STRICT | 14.13 | 17.66 | 23.20 | 317 | 341 |
+| Ambient | 14.28 | 17.63 | 22.62 | 263 | 164 |
 
 #### Stress test (max QPS, 60s, 1KB payload)
 
-| Threads | Scenario | QPS | Avg ms | P99 ms |
-|---------|----------|-----|--------|--------|
-| 10 | Baseline | 1532 | 6.53 | 15.50 |
-| 10 | Sidecar + DISABLE | 1818 | 5.50 | 8.93 |
-| 10 | Sidecar + STRICT | 1728 | 5.79 | 9.42 |
-| 10 | Ambient | 1372 | 7.30 | 16.17 |
-| 50 | Baseline | 1431 | 34.97 | 67.48 |
-| 50 | Sidecar + DISABLE | 2424 | 20.62 | 32.63 |
-| 50 | Sidecar + STRICT | 2315 | 21.59 | 34.36 |
-| 50 | Ambient | 1375 | 36.45 | 72.20 |
-| 100 | Baseline | 1631 | 61.58 | 118.87 |
-| 100 | Sidecar + DISABLE | 2561 | 39.05 | 59.63 |
-| 100 | Sidecar + STRICT | 2483 | 40.27 | 63.22 |
-| 100 | Ambient | 1602 | 62.58 | 126.97 |
+| Threads | Scenario | QPS | Avg ms | P99 ms | CPU (m) | RAM (Mi) |
+|---------|----------|-----|--------|--------|---------|----------|
+| 10 | Baseline | 1532 | 6.53 | 15.50 | 1574 | 178 |
+| 10 | Sidecar + DISABLE | 1818 | 5.50 | 8.93 | 2230 | 311 |
+| 10 | Sidecar + STRICT | 1728 | 5.79 | 9.42 | 2013 | 358 |
+| 10 | Ambient | 1372 | 7.30 | 16.17 | 1456 | 178 |
+| 50 | Baseline | 1431 | 34.97 | 67.48 | 1547 | 193 |
+| 50 | Sidecar + DISABLE | 2424 | 20.62 | 32.63 | 2855 | 335 |
+| 50 | Sidecar + STRICT | 2315 | 21.59 | 34.36 | 2911 | 371 |
+| 50 | Ambient | 1375 | 36.45 | 72.20 | 1533 | 192 |
+| 100 | Baseline | 1631 | 61.58 | 118.87 | 1614 | 215 |
+| 100 | Sidecar + DISABLE | 2561 | 39.05 | 59.63 | 2930 | 392 |
+| 100 | Sidecar + STRICT | 2483 | 40.27 | 63.22 | 3078 | 408 |
+| 100 | Ambient | 1602 | 62.58 | 126.97 | 1648 | 216 |
 
 ### Case Study B – Remote (GKE)
 
@@ -133,39 +133,39 @@ Za svaki od 4 scenarija pokreću se isti tipovi testova, samo se menja Istio kon
 
 #### Standard test (50 QPS, 60s)
 
-| Payload | Scenario | Avg ms | P90 ms | P99 ms |
-|---------|----------|--------|--------|--------|
-| 1KB | Baseline | 68.21 | 77.28 | 107.03 |
-| 1KB | Sidecar + DISABLE | 80.39 | 91.58 | 125.22 |
-| 1KB | Sidecar + STRICT | 78.07 | 88.18 | 123.86 |
-| 1KB | Ambient | 83.89 | 100.11 | 167.97 |
-| 10KB | Baseline | 69.99 | 78.65 | 105.23 |
-| 10KB | Sidecar + DISABLE | 84.69 | 99.69 | 150.01 |
-| 10KB | Sidecar + STRICT | 81.96 | 91.67 | 127.50 |
-| 10KB | Ambient | 88.54 | 103.49 | 163.92 |
-| 100KB | Baseline | 94.48 | 118.66 | 170.67 |
-| 100KB | Sidecar + DISABLE | 105.37 | 136.25 | 224.71 |
-| 100KB | Sidecar + STRICT | 97.16 | 120.19 | 186.89 |
-| 100KB | Ambient | 107.67 | 135.15 | 220.00 |
+| Payload | Scenario | Avg ms | P90 ms | P99 ms | CPU (m) | RAM (Mi) |
+|---------|----------|--------|--------|--------|---------|----------|
+| 1KB | Baseline | 68.21 | 77.28 | 107.03 | 272 | 137 |
+| 1KB | Sidecar + DISABLE | 80.39 | 91.58 | 125.22 | 422 | 241 |
+| 1KB | Sidecar + STRICT | 78.07 | 88.18 | 123.86 | 394 | 278 |
+| 1KB | Ambient | 83.89 | 100.11 | 167.97 | 316 | 148 |
+| 10KB | Baseline | 69.99 | 78.65 | 105.23 | 266 | 145 |
+| 10KB | Sidecar + DISABLE | 84.69 | 99.69 | 150.01 | 408 | 249 |
+| 10KB | Sidecar + STRICT | 81.96 | 91.67 | 127.50 | 419 | 282 |
+| 10KB | Ambient | 88.54 | 103.49 | 163.92 | 321 | 159 |
+| 100KB | Baseline | 94.48 | 118.66 | 170.67 | 566 | 154 |
+| 100KB | Sidecar + DISABLE | 105.37 | 136.25 | 224.71 | 826 | 268 |
+| 100KB | Sidecar + STRICT | 97.16 | 120.19 | 186.89 | 687 | 294 |
+| 100KB | Ambient | 107.67 | 135.15 | 220.00 | 660 | 179 |
 
 > **Napomena 100KB:** Fortio nije mogao da dostigne 50 QPS (100KB odgovor traje ~100ms, interval za 50 QPS = 20ms). Stvarni QPS bio je ~38–45. Ovo je I/O-bound ponašanje, ne greška.
 
 #### Stress test (max QPS, 60s, 1KB)
 
-| Threads | Scenario | QPS | Avg ms | P99 ms |
-|---------|----------|-----|--------|--------|
-| 10 | Baseline | 141 | 70.97 | 128.37 |
-| 10 | Sidecar + DISABLE | 125 | 80.16 | 154.49 |
-| 10 | Sidecar + STRICT | 113 | 89.08 | 181.16 |
-| 10 | Ambient | 116 | 86.44 | 170.68 |
-| 50 | Baseline | 296 | 168.61 | 302.05 |
-| 50 | Sidecar + DISABLE | 188 | 265.11 | 455.54 |
-| 50 | Sidecar + STRICT | 172 | 289.82 | 485.34 |
-| 50 | Ambient | 155 | 322.38 | 558.27 |
-| 100 | Baseline | 310 | 322.68 | 518.55 |
-| 100 | Sidecar + DISABLE | 195 | 510.85 | 797.05 |
-| 100 | Sidecar + STRICT | 172 | 581.65 | 1253.22 |
-| 100 | Ambient | 138 | 765.89 | 2410.23 |
+| Threads | Scenario | QPS | Avg ms | P99 ms | CPU (m) | RAM (Mi) |
+|---------|----------|-----|--------|--------|---------|----------|
+| 10 | Baseline | 141 | 70.97 | 128.37 | 516 | 159 |
+| 10 | Sidecar + DISABLE | 125 | 80.16 | 154.49 | 873 | 253 |
+| 10 | Sidecar + STRICT | 113 | 89.08 | 181.16 | 820 | 260 |
+| 10 | Ambient | 116 | 86.44 | 170.68 | 650 | 157 |
+| 50 | Baseline | 296 | 168.61 | 302.05 | 1072 | 184 |
+| 50 | Sidecar + DISABLE | 188 | 265.11 | 455.54 | 1110 | 286 |
+| 50 | Sidecar + STRICT | 172 | 289.82 | 485.34 | 1129 | 298 |
+| 50 | Ambient | 155 | 322.38 | 558.27 | 712 | 170 |
+| 100 | Baseline | 310 | 322.68 | 518.55 | 1188 | 201 |
+| 100 | Sidecar + DISABLE | 195 | 510.85 | 797.05 | 1153 | 305 |
+| 100 | Sidecar + STRICT | 172 | 581.65 | 1253.22 | 1238 | 336 |
+| 100 | Ambient | 138 | 765.89 | 2410.23 | 691 | 180 |
 
 #### Grafici
 
@@ -181,25 +181,91 @@ Za svaki od 4 scenarija pokreću se isti tipovi testova, samo se menja Istio kon
 > - **Lokalno:** loopback komunikacija unutar jednog Docker kontejnera – nema realnog RTT. Meri čisti overhead proxy-ja.
 > - **GKE:** fizički odvojeni čvorovi u Frankfurtu, realni RTT ~0.38ms između pod-ova. Meri proxy overhead + realna mreža.
 
-#### Standard 1KB – Avg latencija
+#### Standard – Avg latencija (ms)
+
+**1 KB:**
 
 | Scenario | Lokalno (kind) | GKE | Razlika |
 |----------|---------------|-----|---------|
-| Baseline | 12.66 ms | 68.21 ms | +55.55 ms |
-| Sidecar DISABLE | 12.71 ms | 80.39 ms | +67.68 ms |
-| Sidecar STRICT | 12.83 ms | 78.07 ms | +65.24 ms |
-| Ambient | 12.48 ms | 83.89 ms | +71.41 ms |
+| Baseline | 12.66 | 68.21 | +55.55 |
+| Sidecar DISABLE | 12.71 | 80.39 | +67.68 |
+| Sidecar STRICT | 12.83 | 78.07 | +65.24 |
+| Ambient | 12.48 | 83.89 | +71.41 |
 
-#### Stress 1KB 10 threadova – QPS
+**10 KB:**
 
-| Scenario | Lokalno (kind) | GKE | Faktor |
-|----------|---------------|-----|--------|
-| Baseline | 1532 | 141 | 10.9× |
-| Sidecar DISABLE | 1818 | 125 | 14.5× |
-| Sidecar STRICT | 1728 | 113 | 15.3× |
-| Ambient | 1372 | 116 | 11.8× |
+| Scenario | Lokalno (kind) | GKE | Razlika |
+|----------|---------------|-----|---------|
+| Baseline | 13.05 | 69.99 | +56.94 |
+| Sidecar DISABLE | 12.64 | 84.69 | +72.05 |
+| Sidecar STRICT | 12.84 | 81.96 | +69.12 |
+| Ambient | 12.84 | 88.54 | +75.70 |
 
-> GKE ima ~10–15× niži QPS u odnosu na lokalno zbog realne mrežne latencije. Relativni redosled scenarija ostaje konzistentan.
+**100 KB:**
+
+| Scenario | Lokalno (kind) | GKE | Razlika |
+|----------|---------------|-----|---------|
+| Baseline | 14.72 | 94.48 | +79.76 |
+| Sidecar DISABLE | 13.61 | 105.37 | +91.76 |
+| Sidecar STRICT | 14.13 | 97.16 | +83.03 |
+| Ambient | 14.28 | 107.67 | +93.39 |
+
+> Sa rastom payload-a razlika između lokalno i GKE raste — mrežni overhead prenosa većih podataka dolazi do izražaja na GKE-u.
+
+---
+
+#### Stress – QPS (1 KB)
+
+| Threads | Scenario | Lokalno (kind) | GKE | Faktor |
+|---------|----------|---------------|-----|--------|
+| 10 | Baseline | 1532 | 141 | 10.9× |
+| 10 | Sidecar DISABLE | 1818 | 125 | 14.5× |
+| 10 | Sidecar STRICT | 1728 | 113 | 15.3× |
+| 10 | Ambient | 1372 | 116 | 11.8× |
+| 50 | Baseline | 1431 | 296 | 4.8× |
+| 50 | Sidecar DISABLE | 2424 | 188 | 12.9× |
+| 50 | Sidecar STRICT | 2315 | 172 | 13.5× |
+| 50 | Ambient | 1375 | 155 | 8.9× |
+| 100 | Baseline | 1631 | 310 | 5.3× |
+| 100 | Sidecar DISABLE | 2561 | 195 | 13.1× |
+| 100 | Sidecar STRICT | 2483 | 172 | 14.4× |
+| 100 | Ambient | 1602 | 138 | 11.6× |
+
+#### Stress – QPS (10 KB)
+
+| Threads | Scenario | Lokalno (kind) | GKE | Faktor |
+|---------|----------|---------------|-----|--------|
+| 10 | Baseline | 1523 | 139 | 10.9× |
+| 10 | Sidecar DISABLE | 1564 | 106 | 14.8× |
+| 10 | Sidecar STRICT | 1477 | 103 | 14.3× |
+| 10 | Ambient | 1513 | 102 | 14.8× |
+| 50 | Baseline | 1450 | 270 | 5.4× |
+| 50 | Sidecar DISABLE | 2038 | 173 | 11.8× |
+| 50 | Sidecar STRICT | 1955 | 124 | 15.8× |
+| 50 | Ambient | 1383 | 139 | 9.9× |
+| 100 | Baseline | 1656 | 277 | 6.0× |
+| 100 | Sidecar DISABLE | 2141 | 179 | 12.0× |
+| 100 | Sidecar STRICT | 2058 | 262 | 7.9× |
+| 100 | Ambient | 1440 | 145 | 9.9× |
+
+#### Stress – QPS (100 KB)
+
+| Threads | Scenario | Lokalno (kind) | GKE | Faktor |
+|---------|----------|---------------|-----|--------|
+| 10 | Baseline | 689 | 77 | 8.9× |
+| 10 | Sidecar DISABLE | 652 | 47 | 13.9× |
+| 10 | Sidecar STRICT | 591 | 79 | 7.5× |
+| 10 | Ambient | 559 | 38 | 14.7× |
+| 50 | Baseline | 722 | 83 | 8.7× |
+| 50 | Sidecar DISABLE | 783 | 61 | 12.8× |
+| 50 | Sidecar STRICT | 761 | 104 | 7.3× |
+| 50 | Ambient | 654 | 50 | 13.1× |
+| 100 | Baseline | 825 | 87 | 9.5× |
+| 100 | Sidecar DISABLE | 804 | 68 | 11.8× |
+| 100 | Sidecar STRICT | 785 | 72 | 10.9× |
+| 100 | Ambient | 646 | 63 | 10.3× |
+
+> GKE ima ~5–15× niži QPS u odnosu na lokalno zbog realne mrežne latencije. Relativni redosled scenarija ostaje uglavnom konzistentan, uz izuzetak 100KB gde Sidecar STRICT na GKE-u nadmašuje Baseline zahvaljujući connection pooling-u Envoy proxy-ja.
 
 ---
 
@@ -987,11 +1053,11 @@ gcloud container clusters resize istio-research-cluster \
 
 2. **Payload veličina otkriva cenu mTLS enkripcije** – na 100KB Sidecar STRICT (14.1 ms avg) i Ambient (14.3 ms avg) su sporiji od Sidecar DISABLE (13.6 ms avg). Razlika od ~0.5 ms u avg i ~2.5 ms u P99 direktno reflektuje TLS handshake i enkripciju podataka.
 
-3. **Sidecar dramatično nadmašuje sve pri visokom stresu** – pri 100 threadova Sidecar DISABLE postiže 2561 QPS (avg 39 ms), Sidecar STRICT 2483 QPS (avg 40 ms), dok Baseline stagnira na 1631 QPS (avg 62 ms). Envoy event-loop model skalira daleko bolje od Node.js HTTP servera pod visokom konkurentnošću.
+3. **Sidecar dramatično nadmašuje sve pri visokom stresu, ali uz veću cenu resursa** – pri 100 threadova Sidecar DISABLE postiže 2561 QPS (avg 39 ms), Sidecar STRICT 2483 QPS (avg 40 ms), dok Baseline stagnira na 1631 QPS (avg 62 ms). Envoy event-loop model skalira daleko bolje od Node.js HTTP servera pod visokom konkurentnošću. Međutim, ta prednost dolazi uz ~2× veću potrošnju CPU-a (Sidecar DISABLE 2930m, Sidecar STRICT 3078m vs Baseline 1614m pri 100t/1KB) i ~2× veći RAM (392–408 Mi vs 215 Mi).
 
-4. **Ambient je najlošiji pod stresom** – 1602 QPS i 63 ms pri 100 threadova, gotovo identičan Baseline-u. ztunnel (L4 proxy) uvodi per-packet overhead koji ne skalira kao Envoy L7 proxy.
+4. **Ambient je najlošiji pod stresom, ali ima najmanji resursni overhead** – 1602 QPS i 63 ms pri 100 threadova, gotovo identičan Baseline-u. ztunnel (L4 proxy) uvodi per-packet overhead koji ne skalira kao Envoy L7 proxy. Prednost: CPU i RAM su gotovo identični Baseline-u (1648m / 216 Mi vs 1614m / 215 Mi), što ga čini pogodnim za resource-constrained okruženja.
 
-5. **mTLS overhead je minimalan pod stresom** – razlika između Sidecar DISABLE (2561 QPS) i Sidecar STRICT (2483 QPS) je svega 3%. Enkripcija nije bottleneck – proxy overhead je dominantan faktor.
+5. **mTLS overhead je minimalan pod stresom, ali nosi memorijsku cenu** – razlika između Sidecar DISABLE (2561 QPS) i Sidecar STRICT (2483 QPS) je svega 3%. Enkripcija nije bottleneck za propusnost, ali Sidecar STRICT konzistentno troši više RAM-a od DISABLE (408 Mi vs 392 Mi pri 100t), što reflektuje memoriju za TLS sesije i kriptografske kontekste.
 
 > **Napomena:** Lokalni testovi mere overhead proksija bez mrežnog faktora (loopback komunikacija unutar jednog Docker kontejnera). Ovi rezultati predstavljaju "idealni donji bound" – u realnom okruženju sa fizičkom mrežom razlike između scenarija biće izraženije.
 
@@ -1012,9 +1078,9 @@ od Sidecar DISABLE pri 1KB i 10KB payload-u (78ms vs 80ms, 82ms vs 85ms). Razlog
    | 50t QPS | 296 | 188 (-36%) | 172 (-42%) | 155 (-48%) |
    | 100t QPS | 310 | 195 (-37%) | 172 (-44%) | 138 (-55%) |
 
-   Relativni pad QPS-a raste od ~11–20% pri 10 threadova do 37–55% pri 100 threadova. Sistem postaje **proxy-CPU-bound**, ne mrežno-bound.
+   Relativni pad QPS-a raste od ~11–20% pri 10 threadova do 37–55% pri 100 threadova. Sistem postaje **proxy-CPU-bound**, ne mrežno-bound — merenja potvrđuju: Sidecar scenariji na GKE pri 100t troše 1153–1238m od ukupno ~2000m dostupnih (2 vCPU × 1000m), dok Baseline troši 1188m ali postiže viši QPS jer nema proxy sloj.
 
-5. **Ambient je najslabiji pod visokim stresom** – ztunnel radi na nivou čvora i svaki paket prolazi kernel ↔ ztunnel ↔ kernel tranziciju. Pod visokom konkurentnošću, ovaj overhead postaje bottleneck koji sidecar model nema. Pri 100KB/100t ambient postiže 38–50 QPS vs Baseline 77–83 QPS.
+5. **Ambient je najslabiji pod visokim stresom, ali sa znatno manjim resursnim otiskom** – ztunnel radi na nivou čvora i svaki paket prolazi kernel ↔ ztunnel ↔ kernel tranziciju. Pod visokom konkurentnošću, ovaj overhead postaje bottleneck koji sidecar model nema. Pri 100KB/100t ambient postiže 38–50 QPS vs Baseline 77–83 QPS. Međutim, Ambient troši značajno manje resursa od Sidecar modela pri visokom stresu (691m CPU / 180 Mi vs 1238m / 336 Mi za Sidecar STRICT pri 100t/1KB na GKE), što može biti odlučujući faktor u okruženjima sa ograničenim resursima.
 
 ### Sveobuhvatni zaključci
 
@@ -1022,11 +1088,13 @@ od Sidecar DISABLE pri 1KB i 10KB payload-u (78ms vs 80ms, 82ms vs 85ms). Razlog
 
 2. **mTLS nije "sporiji"** – Sidecar STRICT je konzistentno brži ili jednak Sidecar DISABLE-u. Mehanizmi poput connection reuse i optimizacija u radu Envoy proxy-ja mogu amortizovati overhead enkripcije pri uobičajenom opterećenju. Preporuka: koristiti STRICT mod bez značajnog rizika po performanse.
 
-3. **Sidecar model je bolji izbor za visoko-paralelne workload-ove** – pod stresom (100t), Envoy L7 proxy skalira dramatično bolje od direktnog Node.js stacka (+57% QPS) ili ztunnel-a (+41% QPS). Ambient (ztunnel) ne pruža ove prednosti jer radi na L4.
+3. **Sidecar model je bolji izbor za visoko-paralelne workload-ove, uz resursni kompromis** – pod stresom (100t), Envoy L7 proxy skalira dramatično bolje od direktnog Node.js stacka (+57% QPS) ili ztunnel-a (+41% QPS). Ambient (ztunnel) ne pruža ove prednosti jer radi na L4. Cena sidecara: ~2× veći CPU i RAM od Baseline-a pod punim opterećenjem.
 
 4. **Lokalni vs. GKE: različite dimenzije merenja** – kind meri čisti proxy overhead bez mreže (~10–16ms pri 1KB), GKE meri proxy overhead + realna mreža (~55ms RTT). Apsolutni overhead sličan je na oba okruženja, ali relativni udeo je drugačiji (14–23% na GKE vs dominantna komponenta lokalno).
 
-5. **Ambient je perspektivna tehnologija ali sa cenom** – niži operativni overhead (bez per-pod sidecar), ali lošije performanse pod stresom. Dobra opcija za okruženja gde je jednostavnost važnija od maksimalnog throughput-a.
+5. **Ambient je perspektivna tehnologija sa jasnim tradeoff-om** – lošije performanse pod stresom, ali značajno manji resursni otisak od Sidecar modela (bez per-pod proxy kontejnera, CPU i RAM blizu Baseline nivoa). Dobra opcija za okruženja gde je jednostavnost i efikasnost resursa važnija od maksimalnog throughput-a.
+
+6. **Sidecar modeli nose 2–3× veći RAM overhead od Baseline-a** – u standardnom testu lokalno, Sidecar DISABLE troši 271–287 Mi, Sidecar STRICT 328–341 Mi, dok Baseline i Ambient ostaju na 141–164 Mi. Ovo je relevantan trošak u resource-constrained okruženjima (npr. edge computing, mali Kubernetes klasteri) i treba ga uzeti u obzir pri planiranju kapaciteta.
 
 ---
 
