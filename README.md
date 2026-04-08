@@ -159,6 +159,14 @@ Za svaki od 4 scenarija pokreću se isti tipovi testova, samo se menja Istio kon
 | 100 | Sidecar + STRICT | 785 | 127.31 | 177.49 | 2793 | 460 |
 | 100 | Ambient | 646 | 154.75 | 244.09 | 1914 | 263 |
 
+#### Grafici
+
+- `k8s/results/local-testing/chart_lt_standard.png`
+- `k8s/results/local-testing/chart_lt_stress.png`
+- `k8s/results/local-testing/chart_lt_resources.png`
+
+---
+
 ### Case Study B – Remote (GKE)
 
 > Vrednosti su mean (5 ponavljanja za standard, 3 za stress). Warmup 20s pre svakog testa.
@@ -182,7 +190,7 @@ Za svaki od 4 scenarija pokreću se isti tipovi testova, samo se menja Istio kon
 | 100KB | Sidecar + STRICT | 97.16 | 120.19 | 186.89 | 687 | 294 |
 | 100KB | Ambient | 107.67 | 135.15 | 220.00 | 660 | 180 |
 
-> **Napomena 100KB:** Fortio nije mogao da dostigne 50 QPS (100KB odgovor traje ~100ms, interval za 50 QPS = 20ms). Stvarni QPS bio je ~38–45. Ovo je I/O-bound ponašanje, ne greška.
+> **Napomena 100KB:** Fortio nije mogao da dostigne 50 QPS (100KB odgovor traje ~100ms, interval za 50 QPS = 20ms). Stvarni QPS bio je ~38–50 (zavisno od scenarija). Ovo je I/O-bound ponašanje, ne greška.
 
 #### Stress test (max QPS, 60s, 1KB)
 
@@ -1037,6 +1045,16 @@ kubectl delete ns istio-system
 
 #### Scenario 4 – Ambient
 
+> **Napomena za reprodukciju – 100KB stress:**
+> `kubectl port-forward` nije dizajniran za visoku konkurentnost. Pri 100 threadova × 100KB payload-u,
+> Fortio otvara konekcije brže nego što tunel može da ih prosledi, što uzrokuje timeout greške i
+> nepotpune CSV fajlove resursa.
+>
+> Rešenje: pokrenuti Fortio direktno unutar klastera kao pod i slati zahteve na `http://service-a/...`
+> unutar iste mreže — zaobilazeći port-forward u potpunosti. JSON rezultati su validni; samo CPU/RAM
+> monitoring (CSV) iz prvog pokušaja je bio nepotpun i morao se ponoviti sa ovom metodologijom.
+> Stress testovi za 1KB i 10KB payload nisu imali ovaj problem i koriste standardni port-forward pristup.
+
 ```bash
 istioctl install --set profile=ambient --skip-confirmation
 
@@ -1076,7 +1094,8 @@ for payload in 1 10 100; do
   done
 done
 
-for payload in 1 10 100; do
+# Stress testovi – 1KB i 10KB payload (port-forward je dovoljan)
+for payload in 1 10; do
   for threads in 10 50 100; do
     fortio load -c $threads -qps 0 -t 10s "http://localhost:8080/test?size=${payload}" > /dev/null
     for i in 1 2 3; do
@@ -1095,6 +1114,33 @@ for payload in 1 10 100; do
     done
   done
 done
+
+# Stress testovi – 100KB payload: koristiti in-cluster Fortio da bi se izbegao port-forward bottleneck
+kubectl run fortio --image=fortio/fortio:1.75.0 -n istio-ambient -- server
+kubectl wait --for=condition=Ready pod/fortio -n istio-ambient --timeout=60s
+
+for threads in 10 50 100; do
+  kubectl exec fortio -n istio-ambient -- fortio load -c $threads -qps 0 -t 10s \
+    "http://service-a/test?size=100" > /dev/null
+  for i in 1 2 3; do
+    while true; do
+      echo "$(date +%s),$(kubectl top pods -n istio-ambient --no-headers 2>/dev/null | tr -s ' ' ',')"
+      sleep 5
+    done > k8s/results/remote-testing/ambient/04_resources_stress/100kb/stress-${threads}t-run${i}_resources.csv &
+    RES_PID=$!
+
+    kubectl exec fortio -n istio-ambient -- fortio load -c $threads -qps 0 -t 60s \
+      -json /tmp/stress-${threads}t-run${i}.json \
+      "http://service-a/test?size=100" > /dev/null
+    kubectl cp istio-ambient/fortio:/tmp/stress-${threads}t-run${i}.json \
+      k8s/results/remote-testing/ambient/02_stress/100kb/stress-${threads}t-run${i}.json
+
+    kill $RES_PID
+    sleep 15
+  done
+done
+
+kubectl delete pod fortio -n istio-ambient
 
 # Čišćenje
 kill $PF_PID

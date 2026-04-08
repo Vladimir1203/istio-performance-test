@@ -305,7 +305,7 @@ def rt_load_stress_runs(scenario, threads, payload, n_runs=3):
     return sum(qps_list)/n_runs, sum(avg_list)/n_runs, sum(p99_list)/n_runs
 
 def rt_load_resources_csv(scenario, test_type, payload, run_id):
-    """Učitaj resources CSV za jedan run iz remote-testing."""
+    """Učitaj resources CSV za jedan run iz remote-testing i vrati mean CPU i RAM."""
     if test_type == "standard":
         path = os.path.join(REMOTE_TESTING, scenario, "03_resources_standard",
                             payload, f"run{run_id}_resources.csv")
