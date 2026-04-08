@@ -47,7 +47,7 @@ def lt_load_stress_runs(scenario, threads, payload, n_runs=3):
     return sum(qps_list)/n_runs, sum(avg_list)/n_runs, sum(p99_list)/n_runs
 
 def lt_load_resources_csv(scenario, test_type, payload, run_id):
-    """Učitaj resources CSV za jedan run, vrati peak CPU (sum sva 3 servisa) i peak RAM."""
+    """Učitaj resources CSV za jedan run, vrati mean CPU (sum sva 3 servisa) i mean RAM."""
     if test_type == "standard":
         path = os.path.join(LOCAL_TESTING, scenario, "03_resources_standard",
                             payload, f"run{run_id}_resources.csv")
@@ -72,9 +72,9 @@ def lt_load_resources_csv(scenario, test_type, payload, run_id):
                 if svc in pod:
                     cpu_by_svc[svc].append(cpu_val)
                     ram_by_svc[svc].append(ram_val)
-    peak_cpu = sum(max(v) if v else 0 for v in cpu_by_svc.values())
-    peak_ram = sum(max(v) if v else 0 for v in ram_by_svc.values())
-    return peak_cpu, peak_ram
+    mean_cpu = sum(sum(v)/len(v) if v else 0 for v in cpu_by_svc.values())
+    mean_ram = sum(sum(v)/len(v) if v else 0 for v in ram_by_svc.values())
+    return mean_cpu, mean_ram
 
 # ── LOCAL-TESTING 1. Bar chart – standard latency po payload-u ──
 def lt_chart_standard():
@@ -172,7 +172,7 @@ def lt_chart_stress():
     print(f"Saved: {out}")
     plt.close()
 
-# ── LOCAL-TESTING 3. Bar chart – peak CPU i RAM po scenariju ──
+# ── LOCAL-TESTING 3. Bar chart – mean CPU i RAM po scenariju ──
 def lt_chart_resources():
     scenarios = {
         "Baseline":        "baseline",
@@ -182,7 +182,7 @@ def lt_chart_resources():
     }
     payloads = ["1kb", "10kb", "100kb"]
 
-    # Prikupi peak CPU i RAM za standard testove (mean po 5 runova)
+    # Prikupi mean CPU i RAM za standard testove (mean po 5 runova)
     std_cpu = {label: [] for label in scenarios}
     std_ram = {label: [] for label in scenarios}
     for label, sc in scenarios.items():
@@ -198,7 +198,7 @@ def lt_chart_resources():
             std_cpu[label].append(sum(cpus)/len(cpus) if cpus else 0)
             std_ram[label].append(sum(rams)/len(rams) if rams else 0)
 
-    # Prikupi peak CPU i RAM za stress 100t 1kb (mean po 3 runa)
+    # Prikupi mean CPU i RAM za stress 100t 1kb (mean po 3 runa)
     stress_cpu = {label: 0 for label in scenarios}
     stress_ram = {label: 0 for label in scenarios}
     for label, sc in scenarios.items():
@@ -227,7 +227,7 @@ def lt_chart_resources():
         for bar in bars:
             ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 1,
                     f"{bar.get_height():.0f}", ha="center", va="bottom", fontsize=7)
-    ax.set_title("Standard – Peak CPU (sum 3 servisa)", fontsize=11)
+    ax.set_title("Standard – Mean CPU (sum 3 servisa)", fontsize=11)
     ax.set_ylabel("millicores")
     ax.set_xticks(x)
     ax.set_xticklabels(payloads)
@@ -242,7 +242,7 @@ def lt_chart_resources():
         for bar in bars:
             ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 1,
                     f"{bar.get_height():.0f}", ha="center", va="bottom", fontsize=7)
-    ax.set_title("Standard – Peak RAM (sum 3 servisa)", fontsize=11)
+    ax.set_title("Standard – Mean RAM (sum 3 servisa)", fontsize=11)
     ax.set_ylabel("MiB")
     ax.set_xticks(x)
     ax.set_xticklabels(payloads)
@@ -258,7 +258,7 @@ def lt_chart_resources():
     for bar in bars:
         ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 1,
                 f"{bar.get_height():.0f}", ha="center", va="bottom", fontsize=8)
-    ax.set_title("Stress (100t, 1KB) – Peak CPU", fontsize=11)
+    ax.set_title("Stress (100t, 1KB) – Mean CPU", fontsize=11)
     ax.set_ylabel("millicores")
     ax.grid(axis="y", linestyle="--", alpha=0.4)
 
@@ -269,7 +269,7 @@ def lt_chart_resources():
     for bar in bars:
         ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 1,
                 f"{bar.get_height():.0f}", ha="center", va="bottom", fontsize=8)
-    ax.set_title("Stress (100t, 1KB) – Peak RAM", fontsize=11)
+    ax.set_title("Stress (100t, 1KB) – Mean RAM", fontsize=11)
     ax.set_ylabel("MiB")
     ax.grid(axis="y", linestyle="--", alpha=0.4)
 
@@ -330,9 +330,9 @@ def rt_load_resources_csv(scenario, test_type, payload, run_id):
                 if svc in pod:
                     cpu_by_svc[svc].append(cpu_val)
                     ram_by_svc[svc].append(ram_val)
-    peak_cpu = sum(max(v) if v else 0 for v in cpu_by_svc.values())
-    peak_ram = sum(max(v) if v else 0 for v in ram_by_svc.values())
-    return peak_cpu, peak_ram
+    mean_cpu = sum(sum(v)/len(v) if v else 0 for v in cpu_by_svc.values())
+    mean_ram = sum(sum(v)/len(v) if v else 0 for v in ram_by_svc.values())
+    return mean_cpu, mean_ram
 
 def rt_chart_standard():
     scenarios = {
@@ -470,7 +470,7 @@ def rt_chart_resources():
         for bar in bars:
             ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 1,
                     f"{bar.get_height():.0f}", ha="center", va="bottom", fontsize=7)
-    ax.set_title("Standard – Peak CPU (sum 3 servisa)", fontsize=11)
+    ax.set_title("Standard – Mean CPU (sum 3 servisa)", fontsize=11)
     ax.set_ylabel("millicores")
     ax.set_xticks(x)
     ax.set_xticklabels(payloads)
@@ -484,7 +484,7 @@ def rt_chart_resources():
         for bar in bars:
             ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 1,
                     f"{bar.get_height():.0f}", ha="center", va="bottom", fontsize=7)
-    ax.set_title("Standard – Peak RAM (sum 3 servisa)", fontsize=11)
+    ax.set_title("Standard – Mean RAM (sum 3 servisa)", fontsize=11)
     ax.set_ylabel("MiB")
     ax.set_xticks(x)
     ax.set_xticklabels(payloads)
@@ -499,7 +499,7 @@ def rt_chart_resources():
     for bar in bars:
         ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 1,
                 f"{bar.get_height():.0f}", ha="center", va="bottom", fontsize=8)
-    ax.set_title("Stress (100t, 1KB) – Peak CPU", fontsize=11)
+    ax.set_title("Stress (100t, 1KB) – Mean CPU", fontsize=11)
     ax.set_ylabel("millicores")
     ax.grid(axis="y", linestyle="--", alpha=0.4)
 
@@ -509,7 +509,7 @@ def rt_chart_resources():
     for bar in bars:
         ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 1,
                 f"{bar.get_height():.0f}", ha="center", va="bottom", fontsize=8)
-    ax.set_title("Stress (100t, 1KB) – Peak RAM", fontsize=11)
+    ax.set_title("Stress (100t, 1KB) – Mean RAM", fontsize=11)
     ax.set_ylabel("MiB")
     ax.grid(axis="y", linestyle="--", alpha=0.4)
 
