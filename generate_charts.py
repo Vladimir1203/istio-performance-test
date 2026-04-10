@@ -3,6 +3,31 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 
+# Cita JSON fajlove koje je Fortio sacuvao i CSV fajlove sa CPU/RAM
+#   merenjima, racuna srednje vrednosti, i generise PNG grafike.
+# Izracunavanja:
+#   - Ucitava sve runove (5 za standard, 3 za stress) i racuna prosek
+#   (mean) za Avg, P90, P99 latenciju i QPS
+#   - Za resurse — sumira CPU i RAM sva 3 servisa zajedno i racuna prosek
+#    po uzorkovanjima
+#
+#   Sta generise — 6 PNG fajlova ukupno:
+#
+#   ┌───────────────┬────────────────────────┬────────────────────────┐
+#   │               │     Lokalno (kind)     │      Remote (GKE)      │
+#   ├───────────────┼────────────────────────┼────────────────────────┤
+#   │ Standard      │ chart_lt_standard.png  │ chart_rt_standard.png  │
+#   │ latencija     │                        │                        │
+#   ├───────────────┼────────────────────────┼────────────────────────┤
+#   │ Stress QPS +  │ chart_lt_stress.png    │ chart_rt_stress.png    │
+#   │ latencija     │                        │                        │
+#   ├───────────────┼────────────────────────┼────────────────────────┤
+#   │ CPU + RAM     │ chart_lt_resources.png │ chart_rt_resources.png │
+#   └───────────────┴────────────────────────┴────────────────────────┘
+#
+#   Logika je identicna za oba, gde je citanje iz razlicitih foldera
+#   (local-testing vs remote-testing).
+
 # ── Boje po modu ──────────────────────────────────────────────
 COLORS = {
     "Baseline":            "#2196F3",

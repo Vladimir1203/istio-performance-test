@@ -161,9 +161,9 @@ Za svaki od 4 scenarija pokreću se isti tipovi testova, samo se menja Istio kon
 
 #### Grafici
 
-- `k8s/results/local-testing/chart_lt_standard.png`
-- `k8s/results/local-testing/chart_lt_stress.png`
-- `k8s/results/local-testing/chart_lt_resources.png`
+- `k8s/results/local-testing/chart_lt_standard.png` — Bar chart (3 panela po payload-u: 1KB / 10KB / 100KB). Prikazuje Avg, P90 i P99 latenciju za sva 4 scenarija pri standardnom opterećenju (50 QPS). Vidljivo je da Envoy scenariji imaju bolji P99 od Baseline-a zahvaljujući connection pooling-u, dok Ambient ostaje blizu Baseline nivoa.
+- `k8s/results/local-testing/chart_lt_stress.png` — Line chart (2 reda × 3 kolone po payload-u). Gornji red prikazuje QPS, donji Avg latenciju — oba u zavisnosti od broja threadova (10 / 50 / 100). Jasno se vidi kako Sidecar DISABLE i STRICT dramatično skaliraju na visokom stresu zahvaljujući Envoy event-loop modelu, dok Ambient i Baseline stagniraju.
+- `k8s/results/local-testing/chart_lt_resources.png` — Bar chart (2×2 grid). Gornji red prikazuje mean CPU i RAM po payload-u za standard test; donji red prikazuje CPU i RAM pri stress testu (100 threadova, 1KB). Vidljiv je ~2× veći RAM overhead Sidecar scenarija u odnosu na Baseline i Ambient.
 
 ---
 
@@ -245,9 +245,9 @@ Za svaki od 4 scenarija pokreću se isti tipovi testova, samo se menja Istio kon
 
 #### Grafici
 
-- `k8s/results/remote-testing/chart_rt_standard.png`
-- `k8s/results/remote-testing/chart_rt_stress.png`
-- `k8s/results/remote-testing/chart_rt_resources.png`
+- `k8s/results/remote-testing/chart_rt_standard.png` — Bar chart (3 panela po payload-u: 1KB / 10KB / 100KB). Prikazuje Avg, P90 i P99 latenciju za sva 4 scenarija pri 50 QPS na GKE klasteru. Vidljiv je konzistentan overhead svih Istio scenarija u odnosu na Baseline (~10–19ms), pri čemu Sidecar STRICT često nadmašuje Sidecar DISABLE zahvaljujući Envoy optimizacijama konekcija.
+- `k8s/results/remote-testing/chart_rt_stress.png` — Line chart (2 reda × 3 kolone po payload-u). Gornji red prikazuje QPS, donji Avg latenciju u zavisnosti od broja threadova (10 / 50 / 100). Na GKE-u za razliku od lokalnog testiranja Sidecar scenariji ne dominiraju — sistem postaje proxy-CPU-bound, a relativni pad QPS-a raste sa konkurentnošću (do -55% za Ambient pri 100 threadova).
+- `k8s/results/remote-testing/chart_rt_resources.png` — Bar chart (2×2 grid). Gornji red prikazuje mean CPU i RAM po payload-u za standard test; donji red prikazuje CPU i RAM pri stress testu (100 threadova, 1KB). Na GKE-u Sidecar scenariji troše značajno više CPU pod stresom (1153–1238m od ukupno ~2000m dostupnih), dok Ambient ostaje blizu Baseline nivoa (691m).
 
 ---
 
