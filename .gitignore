@@ -6,3 +6,7 @@ sugestije_prof.md
 SESSION_CONTEXT.md
 deprecated_results/
 ANALITIKA.md
+.DS_Store
+**/.DS_Store
+.idea/
+*.pptx

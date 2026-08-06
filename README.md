@@ -81,83 +81,167 @@ Za svaki od 4 scenarija pokreću se isti tipovi testova, samo se menja Istio kon
 
 #### Standard test (50 QPS, 60s)
 
-**1 KB payload:**
+**1 KB payload – Latencija:**
 
-| Scenario | Avg ms | P90 ms | P99 ms | CPU (m) | RAM (Mi) |
-|----------|--------|--------|--------|---------|----------|
-| Baseline | 12.66 | 17.44 | 25.08 | 154 | 146 |
-| Sidecar + DISABLE | 12.71 | 16.94 | 21.11 | 205 | 271 |
-| Sidecar + STRICT | 12.83 | 16.93 | 19.59 | 195 | 327 |
-| Ambient | 12.48 | 16.48 | 19.34 | 153 | 142 |
+| Scenario | Avg ms | P90 ms | P99 ms |
+|----------|--------|--------|--------|
+| Baseline | 12.66 | 17.44 | 25.08 |
+| Sidecar + DISABLE | 12.71 | 16.94 | 21.11 |
+| Sidecar + STRICT | 12.83 | 16.93 | 19.59 |
+| Ambient | 12.48 | 16.48 | 19.34 |
 
-**10 KB payload:**
+**1 KB payload – Resursi:**
 
-| Scenario | Avg ms | P90 ms | P99 ms | CPU (m) | RAM (Mi) |
-|----------|--------|--------|--------|---------|----------|
-| Baseline | 13.05 | 17.67 | 25.01 | 155 | 145 |
-| Sidecar + DISABLE | 12.64 | 16.89 | 19.61 | 199 | 280 |
-| Sidecar + STRICT | 12.84 | 16.91 | 19.75 | 191 | 330 |
-| Ambient | 12.84 | 16.95 | 19.66 | 143 | 147 |
+| Scenario | CPU (m) | RAM (Mi) |
+|----------|---------|----------|
+| Baseline | 154 | 146 |
+| Sidecar + DISABLE | 205 | 271 |
+| Sidecar + STRICT | 195 | 327 |
+| Ambient | 153 | 142 |
 
-**100 KB payload:**
+**10 KB payload – Latencija:**
 
-| Scenario | Avg ms | P90 ms | P99 ms | CPU (m) | RAM (Mi) |
-|----------|--------|--------|--------|---------|----------|
-| Baseline | 14.72 | 19.13 | 25.36 | 290 | 160 |
-| Sidecar + DISABLE | 13.61 | 16.95 | 20.71 | 304 | 287 |
-| Sidecar + STRICT | 14.13 | 17.66 | 23.20 | 317 | 341 |
-| Ambient | 14.28 | 17.63 | 22.62 | 263 | 164 |
+| Scenario | Avg ms | P90 ms | P99 ms |
+|----------|--------|--------|--------|
+| Baseline | 13.05 | 17.67 | 25.01 |
+| Sidecar + DISABLE | 12.64 | 16.89 | 19.61 |
+| Sidecar + STRICT | 12.84 | 16.91 | 19.75 |
+| Ambient | 12.84 | 16.95 | 19.66 |
+
+**10 KB payload – Resursi:**
+
+| Scenario | CPU (m) | RAM (Mi) |
+|----------|---------|----------|
+| Baseline | 155 | 145 |
+| Sidecar + DISABLE | 199 | 280 |
+| Sidecar + STRICT | 191 | 330 |
+| Ambient | 143 | 147 |
+
+**100 KB payload – Latencija:**
+
+| Scenario | Avg ms | P90 ms | P99 ms |
+|----------|--------|--------|--------|
+| Baseline | 14.72 | 19.13 | 25.36 |
+| Sidecar + DISABLE | 13.61 | 16.95 | 20.71 |
+| Sidecar + STRICT | 14.13 | 17.66 | 23.20 |
+| Ambient | 14.28 | 17.63 | 22.62 |
+
+**100 KB payload – Resursi:**
+
+| Scenario | CPU (m) | RAM (Mi) |
+|----------|---------|----------|
+| Baseline | 290 | 160 |
+| Sidecar + DISABLE | 304 | 287 |
+| Sidecar + STRICT | 317 | 341 |
+| Ambient | 263 | 164 |
 
 #### Stress test (max QPS, 60s, 1KB payload)
 
-| Threads | Scenario | QPS | Avg ms | P99 ms | CPU (m) | RAM (Mi) |
-|---------|----------|-----|--------|--------|---------|----------|
-| 10 | Baseline | 1532 | 6.53 | 15.50 | 1574 | 178 |
-| 10 | Sidecar + DISABLE | 1818 | 5.50 | 8.93 | 2230 | 311 |
-| 10 | Sidecar + STRICT | 1728 | 5.79 | 9.42 | 2013 | 358 |
-| 10 | Ambient | 1372 | 7.30 | 16.17 | 1456 | 178 |
-| 50 | Baseline | 1431 | 34.97 | 67.48 | 1547 | 193 |
-| 50 | Sidecar + DISABLE | 2424 | 20.62 | 32.63 | 2855 | 335 |
-| 50 | Sidecar + STRICT | 2315 | 21.59 | 34.36 | 2911 | 372 |
-| 50 | Ambient | 1375 | 36.45 | 72.20 | 1533 | 192 |
-| 100 | Baseline | 1631 | 61.58 | 118.87 | 1614 | 215 |
-| 100 | Sidecar + DISABLE | 2561 | 39.05 | 59.63 | 2930 | 392 |
-| 100 | Sidecar + STRICT | 2483 | 40.27 | 63.22 | 3078 | 408 |
-| 100 | Ambient | 1602 | 62.58 | 126.97 | 1648 | 216 |
+**Latencija i throughput:**
+
+| Threads | Scenario | QPS | Avg ms | P99 ms |
+|---------|----------|-----|--------|--------|
+| 10 | Baseline | 1532 | 6.53 | 15.50 |
+| 10 | Sidecar + DISABLE | 1818 | 5.50 | 8.93 |
+| 10 | Sidecar + STRICT | 1728 | 5.79 | 9.42 |
+| 10 | Ambient | 1372 | 7.30 | 16.17 |
+| 50 | Baseline | 1431 | 34.97 | 67.48 |
+| 50 | Sidecar + DISABLE | 2424 | 20.62 | 32.63 |
+| 50 | Sidecar + STRICT | 2315 | 21.59 | 34.36 |
+| 50 | Ambient | 1375 | 36.45 | 72.20 |
+| 100 | Baseline | 1631 | 61.58 | 118.87 |
+| 100 | Sidecar + DISABLE | 2561 | 39.05 | 59.63 |
+| 100 | Sidecar + STRICT | 2483 | 40.27 | 63.22 |
+| 100 | Ambient | 1602 | 62.58 | 126.97 |
+
+**Resursi:**
+
+| Threads | Scenario | CPU (m) | RAM (Mi) |
+|---------|----------|---------|----------|
+| 10 | Baseline | 1574 | 178 |
+| 10 | Sidecar + DISABLE | 2230 | 311 |
+| 10 | Sidecar + STRICT | 2013 | 358 |
+| 10 | Ambient | 1456 | 178 |
+| 50 | Baseline | 1547 | 193 |
+| 50 | Sidecar + DISABLE | 2855 | 335 |
+| 50 | Sidecar + STRICT | 2911 | 372 |
+| 50 | Ambient | 1533 | 192 |
+| 100 | Baseline | 1614 | 215 |
+| 100 | Sidecar + DISABLE | 2930 | 392 |
+| 100 | Sidecar + STRICT | 3078 | 408 |
+| 100 | Ambient | 1648 | 216 |
 
 #### Stress test (max QPS, 60s, 10KB payload)
 
-| Threads | Scenario | QPS | Avg ms | P99 ms | CPU (m) | RAM (Mi) |
-|---------|----------|-----|--------|--------|---------|----------|
-| 10 | Baseline | 1523 | 6.57 | 13.71 | 1749 | 182 |
-| 10 | Sidecar + DISABLE | 1564 | 6.39 | 10.60 | 2317 | 341 |
-| 10 | Sidecar + STRICT | 1477 | 6.77 | 10.98 | 2255 | 372 |
-| 10 | Ambient | 1513 | 6.61 | 13.89 | 1657 | 185 |
-| 50 | Baseline | 1450 | 34.51 | 60.72 | 1685 | 195 |
-| 50 | Sidecar + DISABLE | 2038 | 24.53 | 38.22 | 2990 | 355 |
-| 50 | Sidecar + STRICT | 1955 | 25.57 | 39.72 | 3086 | 400 |
-| 50 | Ambient | 1383 | 36.16 | 72.42 | 1679 | 194 |
-| 100 | Baseline | 1656 | 60.60 | 108.42 | 1670 | 218 |
-| 100 | Sidecar + DISABLE | 2141 | 46.70 | 69.33 | 2803 | 393 |
-| 100 | Sidecar + STRICT | 2058 | 48.58 | 74.21 | 2975 | 418 |
-| 100 | Ambient | 1440 | 69.56 | 188.46 | 1699 | 217 |
+**Latencija i throughput:**
+
+| Threads | Scenario | QPS | Avg ms | P99 ms |
+|---------|----------|-----|--------|--------|
+| 10 | Baseline | 1523 | 6.57 | 13.71 |
+| 10 | Sidecar + DISABLE | 1564 | 6.39 | 10.60 |
+| 10 | Sidecar + STRICT | 1477 | 6.77 | 10.98 |
+| 10 | Ambient | 1513 | 6.61 | 13.89 |
+| 50 | Baseline | 1450 | 34.51 | 60.72 |
+| 50 | Sidecar + DISABLE | 2038 | 24.53 | 38.22 |
+| 50 | Sidecar + STRICT | 1955 | 25.57 | 39.72 |
+| 50 | Ambient | 1383 | 36.16 | 72.42 |
+| 100 | Baseline | 1656 | 60.60 | 108.42 |
+| 100 | Sidecar + DISABLE | 2141 | 46.70 | 69.33 |
+| 100 | Sidecar + STRICT | 2058 | 48.58 | 74.21 |
+| 100 | Ambient | 1440 | 69.56 | 188.46 |
+
+**Resursi:**
+
+| Threads | Scenario | CPU (m) | RAM (Mi) |
+|---------|----------|---------|----------|
+| 10 | Baseline | 1749 | 182 |
+| 10 | Sidecar + DISABLE | 2317 | 341 |
+| 10 | Sidecar + STRICT | 2255 | 372 |
+| 10 | Ambient | 1657 | 185 |
+| 50 | Baseline | 1685 | 195 |
+| 50 | Sidecar + DISABLE | 2990 | 355 |
+| 50 | Sidecar + STRICT | 3086 | 400 |
+| 50 | Ambient | 1679 | 194 |
+| 100 | Baseline | 1670 | 218 |
+| 100 | Sidecar + DISABLE | 2803 | 393 |
+| 100 | Sidecar + STRICT | 2975 | 418 |
+| 100 | Ambient | 1699 | 217 |
 
 #### Stress test (max QPS, 60s, 100KB payload)
 
-| Threads | Scenario | QPS | Avg ms | P99 ms | CPU (m) | RAM (Mi) |
-|---------|----------|-----|--------|--------|---------|----------|
-| 10 | Baseline | 689 | 14.51 | 23.18 | 2051 | 204 |
-| 10 | Sidecar + DISABLE | 652 | 15.35 | 24.65 | 2303 | 372 |
-| 10 | Sidecar + STRICT | 591 | 16.93 | 26.56 | 2669 | 380 |
-| 10 | Ambient | 559 | 17.87 | 28.01 | 2078 | 187 |
-| 50 | Baseline | 722 | 69.22 | 97.74 | 2148 | 233 |
-| 50 | Sidecar + DISABLE | 783 | 63.81 | 93.69 | 2747 | 423 |
-| 50 | Sidecar + STRICT | 761 | 65.65 | 97.24 | 2790 | 433 |
-| 50 | Ambient | 654 | 76.36 | 115.23 | 1856 | 230 |
-| 100 | Baseline | 825 | 121.16 | 158.09 | 2158 | 278 |
-| 100 | Sidecar + DISABLE | 804 | 124.24 | 173.29 | 2849 | 448 |
-| 100 | Sidecar + STRICT | 785 | 127.31 | 177.49 | 2793 | 460 |
-| 100 | Ambient | 646 | 154.75 | 244.09 | 1914 | 263 |
+**Latencija i throughput:**
+
+| Threads | Scenario | QPS | Avg ms | P99 ms |
+|---------|----------|-----|--------|--------|
+| 10 | Baseline | 689 | 14.51 | 23.18 |
+| 10 | Sidecar + DISABLE | 652 | 15.35 | 24.65 |
+| 10 | Sidecar + STRICT | 591 | 16.93 | 26.56 |
+| 10 | Ambient | 559 | 17.87 | 28.01 |
+| 50 | Baseline | 722 | 69.22 | 97.74 |
+| 50 | Sidecar + DISABLE | 783 | 63.81 | 93.69 |
+| 50 | Sidecar + STRICT | 761 | 65.65 | 97.24 |
+| 50 | Ambient | 654 | 76.36 | 115.23 |
+| 100 | Baseline | 825 | 121.16 | 158.09 |
+| 100 | Sidecar + DISABLE | 804 | 124.24 | 173.29 |
+| 100 | Sidecar + STRICT | 785 | 127.31 | 177.49 |
+| 100 | Ambient | 646 | 154.75 | 244.09 |
+
+**Resursi:**
+
+| Threads | Scenario | CPU (m) | RAM (Mi) |
+|---------|----------|---------|----------|
+| 10 | Baseline | 2051 | 204 |
+| 10 | Sidecar + DISABLE | 2303 | 372 |
+| 10 | Sidecar + STRICT | 2669 | 380 |
+| 10 | Ambient | 2078 | 187 |
+| 50 | Baseline | 2148 | 233 |
+| 50 | Sidecar + DISABLE | 2747 | 423 |
+| 50 | Sidecar + STRICT | 2790 | 433 |
+| 50 | Ambient | 1856 | 230 |
+| 100 | Baseline | 2158 | 278 |
+| 100 | Sidecar + DISABLE | 2849 | 448 |
+| 100 | Sidecar + STRICT | 2793 | 460 |
+| 100 | Ambient | 1914 | 263 |
 
 #### Grafici
 
@@ -175,73 +259,149 @@ Za svaki od 4 scenarija pokreću se isti tipovi testova, samo se menja Istio kon
 
 #### Standard test (50 QPS, 60s)
 
-| Payload | Scenario | Avg ms | P90 ms | P99 ms | CPU (m) | RAM (Mi) |
-|---------|----------|--------|--------|--------|---------|----------|
-| 1KB | Baseline | 68.21 | 77.28 | 107.03 | 272 | 137 |
-| 1KB | Sidecar + DISABLE | 80.39 | 91.58 | 125.22 | 421 | 241 |
-| 1KB | Sidecar + STRICT | 78.07 | 88.18 | 123.86 | 394 | 278 |
-| 1KB | Ambient | 83.89 | 100.11 | 167.97 | 316 | 148 |
-| 10KB | Baseline | 69.99 | 78.65 | 105.23 | 266 | 145 |
-| 10KB | Sidecar + DISABLE | 84.69 | 99.69 | 150.01 | 409 | 250 |
-| 10KB | Sidecar + STRICT | 81.96 | 91.67 | 127.50 | 419 | 282 |
-| 10KB | Ambient | 88.54 | 103.49 | 163.92 | 321 | 159 |
-| 100KB | Baseline | 94.48 | 118.66 | 170.67 | 566 | 154 |
-| 100KB | Sidecar + DISABLE | 105.37 | 136.25 | 224.71 | 826 | 268 |
-| 100KB | Sidecar + STRICT | 97.16 | 120.19 | 186.89 | 687 | 294 |
-| 100KB | Ambient | 107.67 | 135.15 | 220.00 | 660 | 180 |
+**Latencija:**
+
+| Payload | Scenario | Avg ms | P90 ms | P99 ms |
+|---------|----------|--------|--------|--------|
+| 1KB | Baseline | 68.21 | 77.28 | 107.03 |
+| 1KB | Sidecar + DISABLE | 80.39 | 91.58 | 125.22 |
+| 1KB | Sidecar + STRICT | 78.07 | 88.18 | 123.86 |
+| 1KB | Ambient | 83.89 | 100.11 | 167.97 |
+| 10KB | Baseline | 69.99 | 78.65 | 105.23 |
+| 10KB | Sidecar + DISABLE | 84.69 | 99.69 | 150.01 |
+| 10KB | Sidecar + STRICT | 81.96 | 91.67 | 127.50 |
+| 10KB | Ambient | 88.54 | 103.49 | 163.92 |
+| 100KB | Baseline | 94.48 | 118.66 | 170.67 |
+| 100KB | Sidecar + DISABLE | 105.37 | 136.25 | 224.71 |
+| 100KB | Sidecar + STRICT | 97.16 | 120.19 | 186.89 |
+| 100KB | Ambient | 107.67 | 135.15 | 220.00 |
+
+**Resursi:**
+
+| Payload | Scenario | CPU (m) | RAM (Mi) |
+|---------|----------|---------|----------|
+| 1KB | Baseline | 272 | 137 |
+| 1KB | Sidecar + DISABLE | 421 | 241 |
+| 1KB | Sidecar + STRICT | 394 | 278 |
+| 1KB | Ambient | 316 | 148 |
+| 10KB | Baseline | 266 | 145 |
+| 10KB | Sidecar + DISABLE | 409 | 250 |
+| 10KB | Sidecar + STRICT | 419 | 282 |
+| 10KB | Ambient | 321 | 159 |
+| 100KB | Baseline | 566 | 154 |
+| 100KB | Sidecar + DISABLE | 826 | 268 |
+| 100KB | Sidecar + STRICT | 687 | 294 |
+| 100KB | Ambient | 660 | 180 |
 
 > **Napomena 100KB:** Fortio nije mogao da dostigne 50 QPS (100KB odgovor traje ~100ms, interval za 50 QPS = 20ms). Stvarni QPS bio je ~38–50 (zavisno od scenarija). Ovo je I/O-bound ponašanje, ne greška.
 
 #### Stress test (max QPS, 60s, 1KB)
 
-| Threads | Scenario | QPS | Avg ms | P99 ms | CPU (m) | RAM (Mi) |
-|---------|----------|-----|--------|--------|---------|----------|
-| 10 | Baseline | 141 | 70.97 | 128.37 | 516 | 159 |
-| 10 | Sidecar + DISABLE | 125 | 80.16 | 154.49 | 873 | 253 |
-| 10 | Sidecar + STRICT | 130 | 77.05 | 165.48 | 820 | 260 |
-| 10 | Ambient | 116 | 86.44 | 170.68 | 650 | 157 |
-| 50 | Baseline | 296 | 168.61 | 302.05 | 1071 | 183 |
-| 50 | Sidecar + DISABLE | 188 | 265.11 | 455.54 | 1110 | 286 |
-| 50 | Sidecar + STRICT | 211 | 236.88 | 414.99 | 1129 | 298 |
-| 50 | Ambient | 155 | 322.38 | 558.27 | 712 | 170 |
-| 100 | Baseline | 310 | 322.68 | 518.55 | 1188 | 202 |
-| 100 | Sidecar + DISABLE | 195 | 510.85 | 797.05 | 1153 | 305 |
-| 100 | Sidecar + STRICT | 219 | 455.99 | 710.45 | 1238 | 336 |
-| 100 | Ambient | 138 | 765.89 | 2410.23 | 691 | 179 |
+**Latencija i throughput:**
+
+| Threads | Scenario | QPS | Avg ms | P99 ms |
+|---------|----------|-----|--------|--------|
+| 10 | Baseline | 141 | 70.97 | 128.37 |
+| 10 | Sidecar + DISABLE | 125 | 80.16 | 154.49 |
+| 10 | Sidecar + STRICT | 130 | 77.05 | 165.48 |
+| 10 | Ambient | 116 | 86.44 | 170.68 |
+| 50 | Baseline | 296 | 168.61 | 302.05 |
+| 50 | Sidecar + DISABLE | 188 | 265.11 | 455.54 |
+| 50 | Sidecar + STRICT | 211 | 236.88 | 414.99 |
+| 50 | Ambient | 155 | 322.38 | 558.27 |
+| 100 | Baseline | 310 | 322.68 | 518.55 |
+| 100 | Sidecar + DISABLE | 195 | 510.85 | 797.05 |
+| 100 | Sidecar + STRICT | 219 | 455.99 | 710.45 |
+| 100 | Ambient | 138 | 765.89 | 2410.23 |
+
+**Resursi:**
+
+| Threads | Scenario | CPU (m) | RAM (Mi) |
+|---------|----------|---------|----------|
+| 10 | Baseline | 516 | 159 |
+| 10 | Sidecar + DISABLE | 873 | 253 |
+| 10 | Sidecar + STRICT | 820 | 260 |
+| 10 | Ambient | 650 | 157 |
+| 50 | Baseline | 1071 | 183 |
+| 50 | Sidecar + DISABLE | 1110 | 286 |
+| 50 | Sidecar + STRICT | 1129 | 298 |
+| 50 | Ambient | 712 | 170 |
+| 100 | Baseline | 1188 | 202 |
+| 100 | Sidecar + DISABLE | 1153 | 305 |
+| 100 | Sidecar + STRICT | 1238 | 336 |
+| 100 | Ambient | 691 | 179 |
 
 #### Stress test (max QPS, 60s, 10KB)
 
-| Threads | Scenario | QPS | Avg ms | P99 ms | CPU (m) | RAM (Mi) |
-|---------|----------|-----|--------|--------|---------|----------|
-| 10 | Baseline | 139 | 71.89 | 149.62 | 773 | 186 |
-| 10 | Sidecar + DISABLE | 106 | 94.10 | 203.80 | 870 | 288 |
-| 10 | Sidecar + STRICT | 123 | 80.94 | 174.99 | 793 | 294 |
-| 10 | Ambient | 102 | 98.26 | 196.79 | 613 | 163 |
-| 50 | Baseline | 270 | 184.88 | 349.92 | 1141 | 200 |
-| 50 | Sidecar + DISABLE | 173 | 289.35 | 496.21 | 1130 | 307 |
-| 50 | Sidecar + STRICT | 192 | 260.71 | 452.64 | 1180 | 331 |
-| 50 | Ambient | 139 | 359.87 | 586.77 | 729 | 179 |
-| 100 | Baseline | 277 | 359.72 | 581.74 | 1288 | 222 |
-| 100 | Sidecar + DISABLE | 179 | 558.79 | 896.43 | 1210 | 325 |
-| 100 | Sidecar + STRICT | 197 | 507.57 | 805.12 | 1239 | 342 |
-| 100 | Ambient | 145 | 689.35 | 1037.16 | 755 | 209 |
+**Latencija i throughput:**
+
+| Threads | Scenario | QPS | Avg ms | P99 ms |
+|---------|----------|-----|--------|--------|
+| 10 | Baseline | 139 | 71.89 | 149.62 |
+| 10 | Sidecar + DISABLE | 106 | 94.10 | 203.80 |
+| 10 | Sidecar + STRICT | 123 | 80.94 | 174.99 |
+| 10 | Ambient | 102 | 98.26 | 196.79 |
+| 50 | Baseline | 270 | 184.88 | 349.92 |
+| 50 | Sidecar + DISABLE | 173 | 289.35 | 496.21 |
+| 50 | Sidecar + STRICT | 192 | 260.71 | 452.64 |
+| 50 | Ambient | 139 | 359.87 | 586.77 |
+| 100 | Baseline | 277 | 359.72 | 581.74 |
+| 100 | Sidecar + DISABLE | 179 | 558.79 | 896.43 |
+| 100 | Sidecar + STRICT | 197 | 507.57 | 805.12 |
+| 100 | Ambient | 145 | 689.35 | 1037.16 |
+
+**Resursi:**
+
+| Threads | Scenario | CPU (m) | RAM (Mi) |
+|---------|----------|---------|----------|
+| 10 | Baseline | 773 | 186 |
+| 10 | Sidecar + DISABLE | 870 | 288 |
+| 10 | Sidecar + STRICT | 793 | 294 |
+| 10 | Ambient | 613 | 163 |
+| 50 | Baseline | 1141 | 200 |
+| 50 | Sidecar + DISABLE | 1130 | 307 |
+| 50 | Sidecar + STRICT | 1180 | 331 |
+| 50 | Ambient | 729 | 179 |
+| 100 | Baseline | 1288 | 222 |
+| 100 | Sidecar + DISABLE | 1210 | 325 |
+| 100 | Sidecar + STRICT | 1239 | 342 |
+| 100 | Ambient | 755 | 209 |
 
 #### Stress test (max QPS, 60s, 100KB)
 
-| Threads | Scenario | QPS | Avg ms | P99 ms | CPU (m) | RAM (Mi) |
-|---------|----------|-----|--------|--------|---------|----------|
-| 10 | Baseline | 77 | 129.22 | 252.05 | 897 | 195 |
-| 10 | Sidecar + DISABLE | 47 | 216.48 | 468.91 | 774 | 286 |
-| 10 | Sidecar + STRICT | 83 | 120.99 | 270.41 | 1101 | 328 |
-| 10 | Ambient | 38 | 269.58 | 689.92 | 468 | 162 |
-| 50 | Baseline | 83 | 602.61 | 969.41 | 814 | 207 |
-| 50 | Sidecar + DISABLE | 61 | 822.88 | 1759.15 | 900 | 331 |
-| 50 | Sidecar + STRICT | 96 | 519.18 | 935.88 | 1225 | 382 |
-| 50 | Ambient | 50 | 999.54 | 2276.51 | 534 | 202 |
-| 100 | Baseline | 87 | 1141.42 | 2104.18 | 904 | 215 |
-| 100 | Sidecar + DISABLE | 68 | 1462.48 | 1998.32 | 916 | 327 |
-| 100 | Sidecar + STRICT | 95 | 1049.13 | 1878.66 | 1232 | 382 |
-| 100 | Ambient | 63 | 1577.95 | 2409.02 | 608 | 205 |
+**Latencija i throughput:**
+
+| Threads | Scenario | QPS | Avg ms | P99 ms |
+|---------|----------|-----|--------|--------|
+| 10 | Baseline | 77 | 129.22 | 252.05 |
+| 10 | Sidecar + DISABLE | 47 | 216.48 | 468.91 |
+| 10 | Sidecar + STRICT | 83 | 120.99 | 270.41 |
+| 10 | Ambient | 38 | 269.58 | 689.92 |
+| 50 | Baseline | 83 | 602.61 | 969.41 |
+| 50 | Sidecar + DISABLE | 61 | 822.88 | 1759.15 |
+| 50 | Sidecar + STRICT | 96 | 519.18 | 935.88 |
+| 50 | Ambient | 50 | 999.54 | 2276.51 |
+| 100 | Baseline | 87 | 1141.42 | 2104.18 |
+| 100 | Sidecar + DISABLE | 68 | 1462.48 | 1998.32 |
+| 100 | Sidecar + STRICT | 95 | 1049.13 | 1878.66 |
+| 100 | Ambient | 63 | 1577.95 | 2409.02 |
+
+**Resursi:**
+
+| Threads | Scenario | CPU (m) | RAM (Mi) |
+|---------|----------|---------|----------|
+| 10 | Baseline | 897 | 195 |
+| 10 | Sidecar + DISABLE | 774 | 286 |
+| 10 | Sidecar + STRICT | 1101 | 328 |
+| 10 | Ambient | 468 | 162 |
+| 50 | Baseline | 814 | 207 |
+| 50 | Sidecar + DISABLE | 900 | 331 |
+| 50 | Sidecar + STRICT | 1225 | 382 |
+| 50 | Ambient | 534 | 202 |
+| 100 | Baseline | 904 | 215 |
+| 100 | Sidecar + DISABLE | 916 | 327 |
+| 100 | Sidecar + STRICT | 1232 | 382 |
+| 100 | Ambient | 608 | 205 |
 
 #### Grafici
 
@@ -1239,3 +1399,204 @@ istio-performance-test/
 ├── generate_charts.py      # Generiše PNG grafike iz JSON rezultata
 └── README.md
 ```
+
+---
+
+## Pregled po scenarijima — latencija, throughput i resursi
+
+### 1. Baseline (čist Kubernetes, bez Istio-a)
+
+- **Latencija (standard):** Najbrži avg, ali najgori P99 (~25ms lokalno). Bez Envoy-a nema connection pooling-a pa tail latency pati.
+- **Throughput (stress):** Srednji — lokalno ~1600 QPS pri 100t, GKE ~310 QPS. Ne skalira dobro jer Node.js HTTP stack nije optimizovan za visoku konkurentnost.
+- **CPU/RAM:** Najmanji otisak — referentna tačka za sve ostale scenarije.
+
+### 2. Sidecar DISABLE (Envoy proxy, bez mTLS)
+
+- **Latencija (standard):** Malo sporiji avg od Baseline, ali bolji P99 zahvaljujući Envoy connection pooling-u.
+- **Throughput (stress):** Najbolji — lokalno ~2560 QPS pri 100t (+57% vs Baseline). Envoy event-loop model dramatično bolje skalira od Node.js.
+- **CPU/RAM:** ~2× veći RAM od Baseline zbog Envoy sidecar kontejnera u svakom podu. CPU takođe veći pod stresom.
+
+### 3. Sidecar STRICT (Envoy proxy + mTLS)
+
+- **Latencija (standard):** Gotovo identično Sidecar DISABLE-u — mTLS praktički ne dodaje overhead pri normalnom opterećenju. Na GKE čak blago brži od DISABLE-a zbog Envoy optimizacija konekcija.
+- **Throughput (stress):** Gotovo identično DISABLE-u (~2480 QPS lokalno). Enkripcija nije bottleneck za throughput.
+- **CPU/RAM:** Neznatno veći RAM od DISABLE-a (TLS sesije i kriptografski konteksti), ali razlika je mala.
+
+> **Ključni zaključak:** mTLS je praktično besplatan — nema razloga da se ne koristi.
+
+### 4. Ambient (ztunnel, bez sidecar-a)
+
+- **Latencija (standard):** Lokalno blizu Baseline-a ili čak bolji. Na GKE najsporiji od svih (~84ms vs 68ms Baseline pri 1KB) — ztunnel uvodi per-packet overhead na realnoj mreži.
+- **Throughput (stress):** Najslabiji — lokalno i GKE sličan Baseline-u, ne skalira kao Sidecar. ztunnel radi na L4 i nema Envoy L7 optimizacije.
+- **CPU/RAM:** Najmanji otisak od svih Istio scenarija — CPU i RAM blizu Baseline nivoa jer nema sidecar kontejnera u podovima.
+
+---
+
+### Ukupna slika
+
+| Scenario | Latencija | Throughput | CPU/RAM |
+|----------|-----------|------------|---------|
+| Baseline | dobra avg, loš P99 | srednji | minimum |
+| Sidecar DISABLE | dobra, bolji P99 | najbolji | ~2× veći |
+| Sidecar STRICT | isto kao DISABLE | isto kao DISABLE | marginalno veći od DISABLE |
+| Ambient | dobra lokalno, sporiji na GKE | slab pod stresom | blizu Baseline |
+
+- Za max throughput → **Sidecar STRICT** (placamo ~2× CPU/RAM)
+- Za minimalan resursni otisak → **Ambient** (placamo lošijim throughputom pod stresom)
+
+---
+
+## Analiza varijanse
+
+### Dva tipa varijanse
+
+**Intra-run StdDev / CV%** — disperzija latencije unutar jednog 60s testa, između pojedinačnih zahteva. Odražava prirodnu varijabilnost sistema (OS scheduler, GC, TCP stack) — nije greška merenja.
+
+**Inter-run StdDev / CV%** — varijabilnost između 5 ponavljanja istog testa. Ovo je pokazatelj stabilnosti eksperimenta: da li bi ponavljanje dalo isti rezultat. CV > 5% ukazuje da srednja vrednost nije pouzdana.
+
+---
+
+### Intra-run CV — lokalno (kind)
+
+> Vrednosti su mean CV% po scenariju, računato iz StdDev/Avg svakog Fortio JSON runa.
+
+| Scenario | 1KB CV% | 10KB CV% | 100KB CV% |
+|----------|---------|----------|-----------|
+| Baseline | ~31% | ~31% | ~23% |
+| Sidecar DISABLE | ~25% | ~26% | ~18% |
+| Sidecar STRICT | ~25% | ~24% | ~19% |
+| Ambient | ~28% | ~25% | ~19% |
+
+CV od 20–35% je normalan za HTTP latenciju merenu na loopback mreži. Sidecar scenariji imaju nešto niži CV jer Envoy connection pooling ujednačava raspodelu zahteva.
+
+---
+
+### Inter-run CV — lokalno (kind)
+
+| Scenario | 1KB CV% | 10KB CV% | 100KB CV% |
+|----------|---------|----------|-----------|
+| Baseline | 1.0% | 1.1% | 0.6% |
+| Sidecar DISABLE | 0.8% | 1.6% | 0.7% |
+| Sidecar STRICT | 0.7% | 1.1% | 0.9% |
+| Ambient | 0.8% | 1.0% | 0.7% |
+
+Sva merenja lokalno imaju inter-run CV < 1.6% — eksperiment je visoko reproducibilan, srednje vrednosti u tabelama su pouzdane.
+
+---
+
+### Intra-run CV — GKE
+
+| Scenario | 1KB CV% | 10KB CV% | 100KB CV% |
+|----------|---------|----------|-----------|
+| Baseline | ~15% | ~12% | ~22% |
+| Sidecar DISABLE | ~14% | ~19% | ~26% |
+| Sidecar STRICT | ~14% | ~14% | ~25% |
+| Ambient | ~29% | ~22% | ~24% |
+
+Ambient ima visok intra-run CV na GKE (do 39% pri 1KB), sa Max vrednostima do 727ms. Ovo reflektuje spike-ove uzrokovane kernel ↔ ztunnel ↔ kernel tranzicijama na realnoj mreži pod varijabilnim opterećenjem.
+
+---
+
+### Inter-run CV — GKE
+
+| Scenario | 1KB CV% | 10KB CV% | 100KB CV% |
+|----------|---------|----------|-----------|
+| Baseline | 2.4% | 1.1% | **8.1%** |
+| Sidecar DISABLE | 1.6% | 2.0% | 1.8% |
+| Sidecar STRICT | 1.6% | 0.7% | 0.6% |
+| Ambient | 2.1% | 1.5% | 1.4% |
+
+**Kritičan nalaz: Baseline 100KB na GKE ima inter-run CV = 8.1%** (σ = 7.67ms, mean = 94.48ms). Runovi variraju između 87ms i 104ms — razlika od 17ms između ponavljanja. Budući da je razlika između Baseline (94.48ms) i Sidecar STRICT (97.16ms) svega 2.7ms, a Baseline σ iznosi 7.67ms, ova razlika nije statistički sigurna. Sve ostale tačke imaju inter-run CV ≤ 2.4% i smatraju se pouzdanim.
+
+---
+
+### Zaključak varijanse
+
+Rad je metodološki solidan — 95%+ merenja ima inter-run CV ispod 2.5%, što potvrđuje reproducibilnost eksperimenta. Jedina tačka sa povećanom nestabilnošću je **GKE Baseline 100KB standard test** (CV = 8.1%), gde zaključci o relativnom poretku scenarija treba da se uzmu sa rezervom. Visok intra-run CV (~25–35%) je normalan za HTTP latenciju i ne diskvalifikuje rezultate — direktno objašnjava zašto P99 značajno divergira od Avg vrednosti u svim scenarijima.
+
+---
+
+## Napomena o dizajnu service-c (odgovor na pitanje o dodatnom opterećenju)
+
+### Kako radi service-c
+
+```js
+const data = 'x'.repeat(size * 1024);
+res.json({ service: 'service-c', payload_size_kb: size, data: data });
+```
+
+Service-c generiše string zadatog broja KB u memoriji i vraća ga kao JSON odgovor. Nema nikakve CPU-bound obrade — logika je **čisto I/O bound** i izvršava se za mikrosekundu.
+
+### Zašto nije dodat CPU-bound posao
+
+Pitanje koje se prirodno nameće je: da li bi realističniji service-c (npr. sa simuliranim DB pozivom ili CPU računanjem od 20–50ms) dao merodavnije rezultate?
+
+**Ne — za cilj ovog istraživanja trivijalan service-c je bolja metodološka odluka**, iz sledećih razloga:
+
+1. **Izolacija varijable** — cilj studije je merenje overhead-a proxy sloja (Baseline vs Sidecar vs Ambient), ne merenje apsolutnog overhead-a u realnoj aplikaciji. Da service-c troši 50ms na CPU posao, ukupna latencija bi bila ~50ms + mesh overhead — mesh overhead bi izgledao relativno manji i teže bi se pripisao isključivo proxy sloju.
+
+2. **Eliminacija confounding faktora** — varijabilnost DB-a, JIT zagrevanje, cache promašaji, GC pauze bili bi dodatni izvor šuma koji bi povećao inter-run varijansu i otežao poređenje scenarija.
+
+3. **Determinizam** — `'x'.repeat(N)` je potpuno deterministička operacija. Svaki zahtev troši identično vreme u aplikacionom kodu, što znači da sve razlike između scenarija direktno reflektuju razlike u proxy sloju.
+
+4. **Standardna praksa** — isti princip koriste industrijski benchmarkovi (Fortio, wrk, hey): minimalni backend koji ne postaje bottleneck, kako bi se merilo tačno ono što je predmet istraživanja.
+
+### Kontekst za interpretaciju rezultata
+
+Direktna posledica ovog dizajna je da mesh overhead u ovoj studiji izgleda **relativno veći** nego što bi bio u tipičnoj produkcijskoj aplikaciji. Na GKE-u, overhead od ~10–19ms pri standardnom opterećenju predstavlja 14–27% baseline latencije (68ms) — ali u aplikaciji sa 200ms DB pozivom isti overhead bio bi ~5–9%. Ovo treba imati u vidu pri generalizaciji zaključaka na produkcijska okruženja.
+
+---
+
+## Objašnjenje percentila
+
+### Koji percentili se koriste u ovom radu
+
+Fortio za svaki test čuva sledeće vrednosti u JSON rezultatima: **Avg, Min, Max, P50, P75, P90, P99, P99.9**. U tabelama ovog rada koriste se Avg, P90 i P99 (za standard test) i Avg i P99 (za stress test).
+
+### Šta znači percentil
+
+Percentil Pn znači: **n% svih zahteva završilo je za ovo vreme ili kraće**.
+
+Konkretno za ovaj rad — svaki standard test šalje 3000 zahteva (50 QPS × 60s):
+
+| Percentil | Značenje | Broj zahteva od 3000 koji su sporiji |
+|-----------|----------|--------------------------------------|
+| P50 | Medijana — polovina zahteva brža, polovina sporija | 1500 |
+| P75 | 75% zahteva završilo za ovo vreme | 750 |
+| P90 | 90% zahteva završilo za ovo vreme | 300 |
+| P99 | 99% zahteva završilo za ovo vreme | 30 |
+| P99.9 | 99.9% zahteva završilo za ovo vreme | 3 |
+
+### Da li je bolje da su manji ili veći?
+
+**Manji je uvek bolji** — manji percentil znači brži odgovor. Cilj je da svi percentili budu što niži i što bliži jedan drugom (uska distribucija).
+
+**Razlika između Avg i P99 je ključna metrika** — što je ta razlika veća, to je distribucija latencije šira i sistem nepredvidiviji. Primer iz ovog rada (lokalno, 1KB standard):
+
+| Scenario | Avg ms | P50 ms | P75 ms | P90 ms | P99 ms | P99.9 ms | Max ms |
+|----------|--------|--------|--------|--------|--------|----------|--------|
+| Baseline | 12.66 | 12.49 | 15.18 | 17.44 | 25.08 | 32.30 | 34.19 |
+| Sidecar DISABLE | 12.71 | 12.70 | 14.98 | 16.94 | 21.11 | 26.72 | 30.66 |
+| Sidecar STRICT | 12.83 | 12.97 | 15.23 | 16.93 | 19.59 | 23.72 | 24.10 |
+| Ambient | 12.48 | 12.86 | 15.02 | 16.48 | 19.34 | 33.16 | 34.21 |
+
+Baseline ima Avg = 12.66ms ali P99 = 25.08ms — razlika od **12.4ms**. Sidecar STRICT ima Avg = 12.83ms ali P99 = 19.59ms — razlika od svega **6.8ms**. Znači Baseline je u proseku brži, ali ima značajno nepredvidivije ponašanje za najsporijih 1% zahteva.
+
+### Zašto P99 a ne samo Avg?
+
+**Avg je varljiv** — maskira outliere. Ako 2990 zahteva traje 10ms i 10 zahteva traje 300ms, Avg je ~11ms i izgleda odlično. Ali tih 10 zahteva (0.33%) su stvarni korisnici koji čekaju 300ms.
+
+**P90 i P99 mere tail latency** — ponašanje sistema u najgorem slučaju za određeni procenat korisnika. U produkcijskim sistemima SLA (Service Level Agreement) se skoro uvek definiše preko percentila, ne proseka: npr. "P99 latencija mora biti ispod 100ms".
+
+### Zašto Avg i P50 nisu isti?
+
+Latencija HTTP zahteva nije normalno raspodeljena — ima **pozitivnu asimetriju** (long tail). Povremeni spike-ovi (GC pauza, OS scheduler, mrežna retransmisija) pomeraju Avg naviše u odnosu na P50. U ovom radu Avg i P50 su gotovo identični (npr. Baseline: Avg=12.66, P50=12.49) što znači da je distribucija relativno simetrična bez ekstremnih outliera u toku standardnog testa — što je dobro i potvrđuje stabilnost merenja.
+
+### P99.9 i Max — zašto nisu u tabelama
+
+P99.9 i Max su prisutni u Fortio JSON fajlovima ali nisu uključeni u README tabele jer:
+
+- **P99.9** pri 3000 zahteva znači samo 3 zahteva — statistički premalo da bi bio pouzdan pokazatelj
+- **Max** je uvek jedan jedini zahtev — može biti posledica OS-level interrupta ili network glitch-a potpuno van kontrole mesh-a, i nije reprezentativan
+
+Za stress test (koji ima znatno više zahteva) P99.9 bi bio smisleniji, ali radi konzistentnosti između standard i stress tabela korišćen je samo P99.
