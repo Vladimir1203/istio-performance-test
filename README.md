@@ -23,9 +23,7 @@ Tri Node.js/Express mikroservisa u lancu. Service-C generiše payload zadatog KB
 | 3 | Sidecar + mTLS STRICT | Envoy proxy + obavezni mTLS |
 | 4 | Ambient | Istio ztunnel (sidecarless), L4 mTLS |
 
-Napomena: Istio podržava tri mTLS moda unutar service mesh-a: DISABLE, PERMISSIVE i STRICT.
-U ovom istraživanju korišćeni su isključivo DISABLE i STRICT modovi kako bi se obezbedili deterministični i jasno uporedivi rezultati.
-PERMISSIVE mod, koji omogućava istovremeno plaintext i mTLS komunikaciju, izostavljen je jer uvodi nedeterminističko ponašanje i otežava precizno merenje performansi.
+Napomena: Istio u sidecar režimu podržava DISABLE, PERMISSIVE i STRICT mTLS politike. U ovom istraživanju korišćeni su DISABLE i STRICT režimi kako bi se dobila dva jasno definisana i direktno uporediva scenarija: komunikacija bez mTLS-a i komunikacija sa obaveznim mTLS-om. PERMISSIVE režim, koji omogućava prihvatanje i plaintext i mTLS saobraćaja, izostavljen je jer ne predstavlja dodatnu jasno izolovanu konfiguraciju potrebnu za cilj ovog eksperimenta.
 
 ### Test matrica
 
